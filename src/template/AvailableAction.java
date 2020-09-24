@@ -1,53 +1,51 @@
 package template;
 
 import logist.topology.Topology.City;
+import static template.Cts.PICKUPSTRING;
+import static template.Cts.GOTOSTRING;
 
 public class AvailableAction {
-    City nextState;
-    boolean packetPickup;
+    private final City destination;
+    private final boolean isDelivery;
 
-    public AvailableAction(City nextState){
-        if (nextState == null){
-            this.nextState = null;
-            this.packetPickup = true;
-        } else {
-            this.nextState = nextState;
-            this.packetPickup = false;
-        }
+    public AvailableAction(City destination, boolean packet){
+        this.destination = destination;
+        this.isDelivery = packet;
     }
 
-    public State getNextState() {
-        return new State(nextState);
+    // Getters
+    public City getDestination() {
+        return destination;
     }
 
-    public boolean isPickup() {
-        return packetPickup;
+    public boolean isDelivery() {
+        return isDelivery;
     }
 
-    @Override
-    public int hashCode() {
-        if (packetPickup)
-            return 1;
-        else 
-            return nextState.hashCode();
-    }
-
+    // to display easily
     @Override
     public String toString() {
-        if (packetPickup)
-            return "PICKUP";
-        return "GOTO" + nextState.toString();
+        if (isDelivery) return String.format(PICKUPSTRING, destination);
+        return String.format(GOTOSTRING, destination);
     }
 
+    // hashCode and equals necessary to put into HashMaps
+    @Override
+    public int hashCode() {
+        if (isDelivery)
+            return 1;
+        else 
+            return destination.hashCode();
+    }
 
     @Override
     public boolean equals(Object s){
         if (s != null && (s instanceof AvailableAction)) {
             AvailableAction a = (AvailableAction)s;
-            if (this.packetPickup) {
-                return a.packetPickup;
+            if (this.isDelivery) {
+                return a.isDelivery;
             }
-            return nextState.equals(a.nextState);
+            return destination.equals(a.destination);
         }
         return false;
     }
