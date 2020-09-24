@@ -13,7 +13,7 @@ import logist.task.TaskDistribution;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
 
-public class ReactiveTemplateTest implements ReactiveBehavior {
+public class ReactiveAgent implements ReactiveBehavior {
 
 	private Random random;
 	private double pPickup;
