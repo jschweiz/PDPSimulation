@@ -1,7 +1,9 @@
 package template;
 
 import java.security.DrbgParameters.NextBytes;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Random;
 
 import logist.simulation.Vehicle;
@@ -27,16 +29,16 @@ public class ReactiveAgent implements ReactiveBehavior {
 	private Topology topology;
 	private TaskDistribution td;
 	private Agent agent;
+	private LinkedList<State> states;
 
-	HashMap<City, Double> trained;
+	HashMap<State, Double> trained;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
-		this.discount = agent.readProperty("discount-factor", Double.class,
-				0.5);
+		this.discount = agent.readProperty("discount-factor", Double.class, 0.5);
 
 		this.random = new Random();
 		this.pPickup = discount;
@@ -48,32 +50,32 @@ public class ReactiveAgent implements ReactiveBehavior {
 		this.agent = agent;
 		
 		int numCities = topology.size();
+		this.states = new LinkedList<State>();
+		for (City city: topology) {
+			this.states.add(new State(city));
+		}
+
 		this.trained = train();
 	}
 
-	private HashMap<City, Double> train() {
-		HashMap<City, Double> V = new HashMap<City,Double>();
+	private HashMap<State, Double> train() {
+		HashMap<State, Double> V = new HashMap<State,Double>();
 		int subsum;
-		double Q, Q_;
+		double Q = Double.NEGATIVE_INFINITY, Q_;
 
 		// Arbitrary initialisation
-		for(City state : topology)
-			V.put(state, 1.0);
+		for(State state : this.states)
+			V.put(state, random.nextDouble() * 100000);
 
 
-		for (int i=0; i<1000; i++) {
-			for(City state : topology){
-				// Q if action == "take packet"
-				subsum = 0;
-				for(City nextState : topology) 
-					subsum += T(state, null, nextState) * V.get(nextState);
-				Q = R(state, null) + this.discount * subsum;
-
-				// Q if action == "Go to one of the neighboring cities"
-				for(City action : state.neighbors()) {
+		for (int i=0; i<100; i++) {
+			printV(V);
+			for(State state : this.states) {
+				for(AvailableAction action : state.getAvailableActions()) {
 					subsum = 0;
-					for(City nextState : topology) 
+					for(State nextState : this.states){ 
 						subsum += T(state, action, nextState) * V.get(nextState);
+					}
 					Q_ = R(state, action) + this.discount * subsum;
 
 					if (Q_ > Q)
@@ -82,30 +84,41 @@ public class ReactiveAgent implements ReactiveBehavior {
 				V.put(state, Q);
 			}
 		}
+		printP();
+		printR();
 		return V;
 	}
 
-	private double R(City state, City action) {
+	private double R(State state, AvailableAction action) {
 		double r = 0;
-		if(action == null) {
-			for(City nextState : this.topology){
-				r += td.probability(state, nextState) * (td.reward(state, nextState) - state.distanceTo(nextState) * this.agent.vehicles().get(0).costPerKm());
+		City origin = state.getCity(), destination;
+		double sumProba = 0;
+		if(action.isPickup()) {
+			for(State nextState : this.states){
+				destination = nextState.getCity();
+				r += td.probability(origin, destination) * (td.reward(origin, destination) - origin.distanceTo(destination) * this.agent.vehicles().get(0).costPerKm());
 			}
+			for(City city : this.topology){
+				sumProba += this.td.probability(origin, city);
+			}
+			r /= sumProba;
+
 		}
 		else {
-			r = -state.distanceTo(action) * this.agent.vehicles().get(0).costPerKm();
+			destination = action.getNextState().getCity();
+			r = -origin.distanceTo(destination) * this.agent.vehicles().get(0).costPerKm();
 		}
 		return r;
 	}
 
-	private double T(City state, City action, City nextState){
+	private double T(State state, AvailableAction action, State nextState){
 		double t = 0;
 
-		if(action == null) {
-			t = this.td.probability(state, nextState);
+		if(action.isPickup()) {
+			t = this.td.probability(state.getCity(), nextState.getCity());
 		}
 		else {
-			t = (action.equals(nextState)) ? 1 : 0;
+			t = (action.getNextState().equals(nextState)) ? 1 : 0;
 		}
 		return t;
 	}
@@ -114,22 +127,28 @@ public class ReactiveAgent implements ReactiveBehavior {
 	public Action act(Vehicle vehicle, Task availableTask) {
 		Action action = null;
 
-		City currentCity = vehicle.getCurrentCity();
+		State currentState = new State(vehicle.getCurrentCity());
 		double Q;
 		double maxQ = Double.NEGATIVE_INFINITY;
-		for (City nextCity : currentCity.neighbors()){
-			Q = R(currentCity, nextCity) + discount * trained.get(nextCity);
-			if (Q > maxQ){
-				maxQ = Q;
-				action = new Move(nextCity);
-			}
-		}
+		LinkedList<AvailableAction> actions = currentState.getAvailableActions();
+		if (availableTask == null)
+			actions.remove(new AvailableAction(null));
 
-		if (availableTask != null) {
-			Q = R(currentCity, availableTask.deliveryCity) + availableTask.reward + discount * trained.get(availableTask.deliveryCity);
+		State nextState;
+		System.out.println("Vehicule in "+currentState+". Possible actions are: ");
+		for (AvailableAction possibleAction : currentState.getAvailableActions()){
+			System.out.println("-"+possibleAction);
+			nextState = (possibleAction.isPickup()) ? new State(availableTask.deliveryCity) : possibleAction.getNextState();
+			Q = R(currentState, possibleAction) + discount * trained.get(nextState);
+			if (possibleAction.isPickup())
+				Q += availableTask.reward;
 			if (Q > maxQ){
 				maxQ = Q;
-				action = new Pickup(availableTask);
+				if (possibleAction.isPickup()) {
+					action = new Pickup(availableTask);
+				} else {
+					action = new Move(nextState.getCity());
+				}
 			}
 		}
 
@@ -142,6 +161,8 @@ public class ReactiveAgent implements ReactiveBehavior {
 		// 	System.out.println("Ok je vais le livrer");
 		// 	tasksDelivered++;
 		// }
+
+		
 		
 		if (numActions >= 1) {
 			System.out.println("The total profit after "+numActions+" actions is "
@@ -149,8 +170,46 @@ public class ReactiveAgent implements ReactiveBehavior {
 					+(myAgent.getTotalProfit() / myAgent.getTotalDistance())+") (tasks delivered: "
 					+tasksDelivered+")");
 		}
+		if (action instanceof Pickup) 
+			tasksDelivered++;
 		numActions++;
 		
 		return action;
 	}
+
+	public void printV(HashMap<State, Double> map) {
+		System.out.println("Map is:");
+		for (State s : map.keySet()) {
+			System.out.println("City: " + s.getCity().toString() + " has a value of: " + map.get(s));
+		}
+	}
+
+	public void printR() {
+		DecimalFormat df = new DecimalFormat("#.#####");
+		df.format(0.912385);		
+		System.out.println("Reward map is:");
+		for (City from: topology) {
+			for (City to: topology) {
+				System.out.printf(df.format(td.reward(from, to)) + " ");
+			}
+			System.out.println("");
+		}
+	}
+
+	public void printP() {
+		DecimalFormat df = new DecimalFormat("#.##");
+		df.format(0.912385);
+		System.out.println("Probability map is:");
+		for (City from: topology) {
+			for (City to: topology) {
+				if (from.equals(to))
+					System.out.printf(df.format(td.probability(from, to)) + "    ");
+				else
+					System.out.printf(df.format(td.probability(from, to)) + " ");
+			}
+			System.out.println("");
+		}
+	}
+
+
 }
