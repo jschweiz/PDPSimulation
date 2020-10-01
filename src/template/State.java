@@ -38,6 +38,10 @@ public class State {
         return packageDestination;
     }
 
+    public boolean isValidPacket() {
+        return !this.currentCity.equals(this.packageDestination);
+    }
+
     @Override
     public String toString() { // to print easily
         String packetString = (packageDestination == null) ? NOPACKETSTRING

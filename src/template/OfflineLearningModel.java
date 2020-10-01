@@ -97,10 +97,8 @@ public class OfflineLearningModel {
 
 	private double R(State state, AvailableAction action, TaskDistribution td, int costPerKm) {
 		double r = -state.getCity().distanceTo(action.getDestination()) * costPerKm;
-		if (action.isDelivery()) {
-			if (state.getPackageDestination().equals(action.getDestination())) {
-				r = td.reward(state.getCity(), state.getPackageDestination());
-			}
+		if (action.isDelivery() && state.getPackageDestination().equals(action.getDestination())) {
+			r = td.reward(state.getCity(), state.getPackageDestination());
 		}
 		return r;
 	}
@@ -118,7 +116,8 @@ public class OfflineLearningModel {
 
 	private static void printMap(HashMap<State, Double> V, HashMap<State, AvailableAction> A) {
 		for (State state : V.keySet()) {
-			System.out.println(String.format(MAPSTRING, state, A.get(state), V.get(state)));
+			if (!A.get(state).isDelivery() && state.getPackageDestination() != null && state.isValidPacket())
+				System.out.println(String.format(MAPSTRING, state, A.get(state), V.get(state)));
 		}
 	}
 }
