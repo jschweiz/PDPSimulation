@@ -1,0 +1,64 @@
+09:24:25.909 FINE | Run command: java -Xmx1024m -classpath ./logist/logist.jar logist.LogistPlatform -o tournament\first_round\config-AgentRandom-AgentRla.xml -a tournament\first_round\agents.xml .\config\config.xml AgentRandom AgentRla
+09:24:25.990 CONFIG | Reading .\config\config.xml
+09:24:26.055 CONFIG | Reading config\settings_default.xml
+09:24:26.069 CONFIG | Reading config\topology\france.xml
+09:24:26.078 CONFIG | Reading tournament\first_round\agents.xml
+09:24:26.090 WARNING | logist.LogistException: agent AgentRandom crashed: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.105 SEVERE | LogistPlatform returned error code -3
+09:24:26.105 WARNING | 	at logist.agent.TimeoutGuard.schedule(TimeoutGuard.java:51)
+09:24:26.114 FINE | Run command: java -Xmx1024m -classpath ./logist/logist.jar logist.LogistPlatform -o tournament\first_round\config-AgentRla-AgentRandom.xml -a tournament\first_round\agents.xml .\config\config.xml AgentRla AgentRandom
+09:24:26.114 WARNING | 	at logist.agent.AuctionAgent.setup(AuctionAgent.java:53)
+09:24:26.116 WARNING | 	at logist.simulation.Manager.setup(Manager.java:86)
+09:24:26.118 WARNING | 	at logist.simulation.Manager.run(Manager.java:59)
+09:24:26.120 WARNING | 	at logist.LogistPlatform.main(LogistPlatform.java:126)
+09:24:26.120 WARNING | Caused by: java.util.concurrent.ExecutionException: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.123 WARNING | 	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+09:24:26.124 WARNING | 	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+09:24:26.135 WARNING | 	at logist.agent.TimeoutGuard.schedule(TimeoutGuard.java:46)
+09:24:26.136 WARNING | 	... 4 more
+09:24:26.137 WARNING | Caused by: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.138 WARNING | 	at logist.agent.AuctionAgent$1.run(AuctionAgent.java:65)
+09:24:26.139 WARNING | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+09:24:26.140 WARNING | 	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+09:24:26.141 WARNING | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
+09:24:26.152 WARNING | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
+09:24:26.153 WARNING | 	at java.base/java.lang.Thread.run(Thread.java:832)
+09:24:26.154 WARNING | Caused by: java.lang.InstantiationException: logist.behavior.AuctionBehavior
+09:24:26.155 WARNING | 	at java.base/java.lang.Class.newInstance(Class.java:639)
+09:24:26.156 WARNING | 	at logist.agent.AuctionAgent$1.run(AuctionAgent.java:58)
+09:24:26.158 WARNING | 	... 5 more
+09:24:26.158 WARNING | Caused by: java.lang.NoSuchMethodException: logist.behavior.AuctionBehavior.<init>()
+09:24:26.170 WARNING | 	at java.base/java.lang.Class.getConstructor0(Class.java:3508)
+09:24:26.172 WARNING | 	at java.base/java.lang.Class.newInstance(Class.java:626)
+09:24:26.173 WARNING | 	... 6 more
+09:24:26.213 CONFIG | Reading .\config\config.xml
+09:24:26.281 CONFIG | Reading config\settings_default.xml
+09:24:26.294 CONFIG | Reading config\topology\france.xml
+09:24:26.302 CONFIG | Reading tournament\first_round\agents.xml
+09:24:26.315 WARNING | logist.LogistException: agent AgentRla crashed: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.316 WARNING | 	at logist.agent.TimeoutGuard.schedule(TimeoutGuard.java:51)
+09:24:26.324 WARNING | 	at logist.agent.AuctionAgent.setup(AuctionAgent.java:53)
+09:24:26.329 SEVERE | LogistPlatform returned error code -3
+09:24:26.333 WARNING | 	at logist.simulation.Manager.setup(Manager.java:86)
+09:24:26.335 WARNING | 	at logist.simulation.Manager.run(Manager.java:59)
+09:24:26.336 WARNING | 	at logist.LogistPlatform.main(LogistPlatform.java:126)
+09:24:26.337 WARNING | Caused by: java.util.concurrent.ExecutionException: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.339 WARNING | 	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+09:24:26.340 WARNING | 	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:205)
+09:24:26.341 WARNING | 	at logist.agent.TimeoutGuard.schedule(TimeoutGuard.java:46)
+09:24:26.341 WARNING | 	... 4 more
+09:24:26.342 WARNING | Caused by: logist.LogistException: Could not create 'interface logist.behavior.AuctionBehavior': logist.behavior.AuctionBehavior
+09:24:26.353 WARNING | 	at logist.agent.AuctionAgent$1.run(AuctionAgent.java:65)
+09:24:26.354 WARNING | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+09:24:26.355 WARNING | 	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+09:24:26.356 WARNING | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
+09:24:26.356 WARNING | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:630)
+09:24:26.357 WARNING | 	at java.base/java.lang.Thread.run(Thread.java:832)
+09:24:26.358 WARNING | Caused by: java.lang.InstantiationException: logist.behavior.AuctionBehavior
+09:24:26.359 WARNING | 	at java.base/java.lang.Class.newInstance(Class.java:639)
+09:24:26.368 WARNING | 	at logist.agent.AuctionAgent$1.run(AuctionAgent.java:58)
+09:24:26.371 WARNING | 	... 5 more
+09:24:26.372 WARNING | Caused by: java.lang.NoSuchMethodException: logist.behavior.AuctionBehavior.<init>()
+09:24:26.373 WARNING | 	at java.base/java.lang.Class.getConstructor0(Class.java:3508)
+09:24:26.374 WARNING | 	at java.base/java.lang.Class.newInstance(Class.java:626)
+09:24:26.375 WARNING | 	... 6 more
