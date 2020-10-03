@@ -5,14 +5,58 @@
 	
 	<!-- #### REACTIVE AGENTS ### -->
 	<agent name="reactive-rla">
-		<set class-path="agents/AgentRla.jar"/>
+		<set class-path="reactive/bin"/>
 		<set class-name="reactive.ReactiveAgent"/>
 		<set discount-factor=".95"/>
 	</agent>
 	<agent name="reactive-random">
-		<set class-path="agents/AgentRandom.jar"/>
+		<set class-path="../random/bin"/>
 		<set class-name="random.RandomAgent"/>
 		<set discount-factor=".95"/>
 	</agent>
-	
+	<agent name="reactive-rla-2">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor="0.2"/>
+	</agent>
+	<agent name="reactive-rla-4">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".4"/>
+	</agent>
+	<agent name="reactive-rla-6">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".6"/>
+	</agent>
+	<agent name="reactive-rla-8">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".8"/>
+	</agent>
+	<agent name="reactive-rla-9">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".9"/>
+	</agent>
+	<agent name="reactive-rla-95">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".95"/>
+	</agent>
+	<agent name="reactive-rla-98">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".98"/>
+	</agent>
+	<agent name="reactive-rla-99">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".99"/>
+	</agent>
+	<agent name="reactive-rla-999">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set discount-factor=".999"/>
+	</agent>
 </agents>

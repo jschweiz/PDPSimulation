@@ -1,5 +1,7 @@
 package reactive;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 
 import static reactive.Cts.INITSTRING;
@@ -9,6 +11,7 @@ import static reactive.Cts.DEBUGSTRING1;
 import static reactive.Cts.DEBUGSTRING2;
 import static reactive.Cts.DEBUGSTRING3;
 import static reactive.Cts.MAPSTRING;
+import static reactive.Cts.MAPWRITESTRING;
 
 import logist.agent.Agent;
 import logist.task.TaskDistribution;
@@ -17,8 +20,8 @@ import logist.topology.Topology.City;
 
 public class OfflineLearningModel {
 
-	HashMap<State,AvailableAction> A;
-	HashMap<State,Double> V;
+	private HashMap<State,AvailableAction> policy;
+	private HashMap<State,Double> potentialRewards;
 
 	private static int ITERATIONS = 100;
 	private static double INITIALVVALUE = 100000;
@@ -43,24 +46,26 @@ public class OfflineLearningModel {
 		train(td, gamma, agent.vehicles().get(0).costPerKm());
 
 		System.out.println(FINISHEDSTRING);
-		printMap(V,A);
+		printMap(potentialRewards,policy);
+
+		writeModelToFile(gamma);
 	}
 
 	private void initializeStates(Topology topology) {
-		this.V = new HashMap<State, Double>();
-		this.A = new HashMap<State, AvailableAction>();
+		this.potentialRewards = new HashMap<State, Double>();
+		this.policy = new HashMap<State, AvailableAction>();
 
 		for (City here: topology) {
 			for (City packetTo: topology) {
-				this.V.put(new State(here, packetTo), INITIALVVALUE);
+				this.potentialRewards.put(new State(here, packetTo), INITIALVVALUE);
 			}
-			this.V.put(new State(here, null), INITIALVVALUE);
+			this.potentialRewards.put(new State(here, null), INITIALVVALUE);
 		}
 
-		for (State state: this.V.keySet()) {
-			this.A.put(state, state.getAvailableActions().getFirst());
+		for (State state: this.potentialRewards.keySet()) {
+			this.policy.put(state, state.getAvailableActions().getFirst());
 		}
-		if (DEBUG) printMap(V, A);
+		if (DEBUG) printMap(potentialRewards, policy);
 	}
 
 	private void train(TaskDistribution td, double gamma, int costPerKm) {
@@ -70,7 +75,7 @@ public class OfflineLearningModel {
 
 		for (int i=0; i<ITERATIONS; i++) { // iterate 
 	
-			for(State state : this.V.keySet()) {
+			for(State state : this.potentialRewards.keySet()) {
 				
 				Q = Double.NEGATIVE_INFINITY;
 				temporaryBestChoice = null;
@@ -80,8 +85,8 @@ public class OfflineLearningModel {
 				for(AvailableAction action : state.getAvailableActions()) {
 					reward = R(state, action, td, costPerKm);
 					subsum = 0;
-					for(State nextState : this.V.keySet()){ 
-						subsum += T(state, action, nextState, td) * V.get(nextState);
+					for(State nextState : this.potentialRewards.keySet()){ 
+						subsum += T(state, action, nextState, td) * potentialRewards.get(nextState);
 					}
 					Q_ = reward + gamma * subsum;
 
@@ -94,8 +99,8 @@ public class OfflineLearningModel {
 				}
 
 				if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING3, temporaryBestChoice));
-				this.V.put(state, Q);
-				this.A.put(state, temporaryBestChoice);
+				this.potentialRewards.put(state, Q);
+				this.policy.put(state, temporaryBestChoice);
 			}
 		}
 	}
@@ -116,13 +121,26 @@ public class OfflineLearningModel {
 	}
 
 	public AvailableAction getBestActionChoice(State currentState) {
-		return this.A.get(currentState);
+		return this.policy.get(currentState);
 	}
 
-	private static void printMap(HashMap<State, Double> V, HashMap<State, AvailableAction> A) {
-		for (State state : V.keySet()) {
-			if (!A.get(state).isDelivery() && state.getPackageDestination() != null && state.isValidPacket())
-				System.out.println(String.format(MAPSTRING, state, A.get(state), V.get(state)));
+	private static void printMap(HashMap<State, Double> potentialRewards, HashMap<State, AvailableAction> policy) {
+		for (State state : potentialRewards.keySet()) {
+			if (!policy.get(state).isDelivery() && state.getPackageDestination() != null && state.isValidPacket())
+				System.out.println(String.format(MAPSTRING, state, policy.get(state), potentialRewards.get(state)));
+		}
+	}
+
+	private void writeModelToFile(double gamma)  {
+		try {
+		FileWriter myWriter = new FileWriter("logs/" + gamma + "model.txt");
+		for (State state : potentialRewards.keySet()) {
+			myWriter.write(String.format(MAPWRITESTRING, state, policy.get(state)));
+		}
+		myWriter.close();
+		} catch (IOException e) {
+		System.out.println("An error occurred.");
+		e.printStackTrace();
 		}
 	}
 }
