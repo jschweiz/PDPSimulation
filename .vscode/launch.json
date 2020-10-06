@@ -9,7 +9,8 @@
             "name": "Debug (Launch) - Current File",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "config/reactive_discount.xml reactive-rla-2 reactive-rla-4 reactive-rla-6 reactive-rla-8 reactive-rla-9 reactive-rla-95 reactive-rla-98 reactive-rla-99 reactive-rla-999"
+            // "args": "config/reactive_discount.xml reactive-rla-2 reactive-rla-4 reactive-rla-6 reactive-rla-8 reactive-rla-9 reactive-rla-95 reactive-rla-98 reactive-rla-99 reactive-rla-999"
+            "args": "config/reactive_discount.xml reactive-rla-2 reactive-random"
         }
     ]
 }
