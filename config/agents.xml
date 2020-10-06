@@ -59,4 +59,24 @@
 		<set class-name="reactive.ReactiveAgent"/>
 		<set discount-factor=".999"/>
 	</agent>
+	<agent name="reactive-rla-1000000">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set precision="1000000"/>
+	</agent>
+	<agent name="reactive-rla-10000">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set precision="10000"/>
+	</agent>
+	<agent name="reactive-rla-100">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set precision="100"/>
+	</agent>
+	<agent name="reactive-rla-0.1">
+		<set class-path="reactive/bin"/>
+		<set class-name="reactive.ReactiveAgent"/>
+		<set precision=".1"/>
+	</agent>
 </agents>

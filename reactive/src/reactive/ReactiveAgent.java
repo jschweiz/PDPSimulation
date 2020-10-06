@@ -33,14 +33,15 @@ public class ReactiveAgent implements ReactiveBehavior {
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
 
 		// Reads the discount factor from the agents.xml file.
-		double discount = agent.readProperty("discount-factor", Double.class, 0.95);
+		double discount = agent.readProperty("discount-factor", Double.class, 0.99);
+		double precision = agent.readProperty("precision", Double.class, 1.0);
 		DEBUG = agent.readProperty("debug", Boolean.class, false);
 
 		this.agent = agent;
 		this.numActions = 0;
 		this.tasksDelivered = 0;
 
-		this.model = new OfflineLearningModel(DEBUG, 1000);
+		this.model = new OfflineLearningModel(DEBUG, precision);
 		this.model.trainModel(topology, td, agent, discount);
 
 		try {
@@ -71,15 +72,15 @@ public class ReactiveAgent implements ReactiveBehavior {
 			action = new Move(bestAction.getDestination());
 		}
 		
-		if (numActions >= 1) {
-			System.out.println(String.format(SUMMARYSTRING, numActions, agent.getTotalProfit(),
-					agent.getTotalProfit() / agent.getTotalDistance(), tasksDelivered));
-			try {
-				myWriter.write(agent.getTotalDistance() + "," + agent.getTotalProfit() + "\n");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		// if (numActions >= 1) {
+		// 	System.out.println(String.format(SUMMARYSTRING, numActions, agent.getTotalProfit(),
+		// 			agent.getTotalProfit() / agent.getTotalDistance(), tasksDelivered));
+		// 	try {
+		// 		myWriter.write(agent.getTotalDistance() + "," + agent.getTotalProfit() + "\n");
+		// 	} catch (IOException e) {
+		// 		e.printStackTrace();
+		// 	}
+		// }
 		// update values
 		if (action instanceof Pickup) tasksDelivered++;
 		numActions++;
