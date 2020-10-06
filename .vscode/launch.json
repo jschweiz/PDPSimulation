@@ -9,7 +9,7 @@
             "name": "Debug (Launch) - Current File",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "config/reactive_precision.xml reactive-rla-1000000 reactive-rla-10000 reactive-rla-100 reactive-rla-0.1"
+            "args": "config/reactive_compet.xml reactive-random reactive-dummy reactive-rla"
         }
     ]
 }
