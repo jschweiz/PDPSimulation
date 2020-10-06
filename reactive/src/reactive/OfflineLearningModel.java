@@ -28,19 +28,15 @@ public class OfflineLearningModel {
 	private Agent agent;
 	private double gamma;
 
-	private static int ITERATIONS = 10000;
-	private static double INITIALVVALUE = 100000;
+	private static double PRECISION = 0.1;
+	private static double INITIALVVALUE = 10;
 
 	// for debug purposes
 	private boolean DEBUG = false;
 
-	public OfflineLearningModel(boolean debug) {
+	public OfflineLearningModel(boolean debug, double precision) {
 		this.DEBUG = debug;
-	}
- 
-	public OfflineLearningModel(boolean debug, int iterations) {
-		this.DEBUG = debug;
-		ITERATIONS = iterations;
+		PRECISION = precision;
 	}
 
 	public void trainModel(Topology topology, TaskDistribution td, Agent agent, double gamma) {
@@ -81,24 +77,27 @@ public class OfflineLearningModel {
 		double Q, Q_, reward;
 		AvailableAction temporaryBestChoice;
 
-		for (int i=0; i<ITERATIONS; i++) { // iterate 
+		boolean preciseEnough;
+		int count = 0;
+		do { // iterate 
+			preciseEnough = true;
 	
 			for(State state : this.potentialRewards.keySet()) {
 				
 				Q = Double.NEGATIVE_INFINITY;
 				temporaryBestChoice = null;
 
-				if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING1, state));
+				// if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING1, state));
 
 				for(AvailableAction action : state.getAvailableActions()) {
 					reward = R(state, action, td, costPerKm);
 					subsum = 0;
 					for(State nextState : this.potentialRewards.keySet()){ 
-						subsum += T(state, action, nextState, td) * potentialRewards.get(nextState);
+						subsum += T(state, action, nextState, td) * this.potentialRewards.get(nextState);
 					}
 					Q_ = reward + gamma * subsum;
 
-					if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING2, action, subsum, reward));
+					// if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING2, action, subsum, reward));
 
 					if (Q_ > Q) {
 						Q = Q_;
@@ -106,11 +105,19 @@ public class OfflineLearningModel {
 					}
 				}
 
-				if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING3, temporaryBestChoice));
+				// if (DEBUG && i%10 == 0) System.out.println(String.format(DEBUGSTRING3, temporaryBestChoice));
+
+				if (Math.abs(this.potentialRewards.get(state) - Q) > PRECISION ){
+					preciseEnough = false;
+				}
+
 				this.potentialRewards.put(state, Q);
 				this.policy.put(state, temporaryBestChoice);
 			}
-		}
+			count++;
+		} while (!preciseEnough);
+
+		System.out.println("Iterations:" + count);
 	}
 
 	private double R(State state, AvailableAction action, TaskDistribution td, int costPerKm) {
