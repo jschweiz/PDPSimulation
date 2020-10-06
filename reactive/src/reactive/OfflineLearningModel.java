@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
+import cern.colt.list.adapter.DoubleListAdapter;
+
 import static reactive.Cts.INITSTRING;
 import static reactive.Cts.TRAINSTRING;
 import static reactive.Cts.FINISHEDSTRING;
@@ -22,8 +24,11 @@ public class OfflineLearningModel {
 
 	private HashMap<State,AvailableAction> policy;
 	private HashMap<State,Double> potentialRewards;
+	private TaskDistribution td;
+	private Agent agent;
+	private double gamma;
 
-	private static int ITERATIONS = 100;
+	private static int ITERATIONS = 10000;
 	private static double INITIALVVALUE = 100000;
 
 	// for debug purposes
@@ -39,6 +44,9 @@ public class OfflineLearningModel {
 	}
 
 	public void trainModel(Topology topology, TaskDistribution td, Agent agent, double gamma) {
+		this.gamma = gamma;
+		this.td = td;
+		this.agent = agent;
 		System.out.println(INITSTRING);
 		initializeStates(topology);
 
@@ -108,7 +116,7 @@ public class OfflineLearningModel {
 	private double R(State state, AvailableAction action, TaskDistribution td, int costPerKm) {
 		double r = -state.getCity().distanceTo(action.getDestination()) * costPerKm;
 		if (action.isDelivery() && state.getPackageDestination().equals(action.getDestination())) {
-			r = td.reward(state.getCity(), state.getPackageDestination());
+			r += td.reward(state.getCity(), state.getPackageDestination());
 		}
 		return r;
 	}
@@ -120,8 +128,26 @@ public class OfflineLearningModel {
 		return td.probability(destination, nextState.getPackageDestination());
 	}
 
-	public AvailableAction getBestActionChoice(State currentState) {
-		return this.policy.get(currentState);
+	public AvailableAction getBestActionChoice(State currentState, long reward) {
+		Double V = Double.MIN_VALUE;
+		AvailableAction best= null;
+		for (AvailableAction a : currentState.getAvailableActions()) {
+			double subsum = 0;
+			for(State nextState : this.potentialRewards.keySet()){ 
+				subsum += T(currentState, a, nextState, td) * potentialRewards.get(nextState);
+			} 
+			double r = gamma*subsum;
+			r -= currentState.getCity().distanceTo(a.getDestination()) * agent.vehicles().get(0).costPerKm();
+			if (a.isDelivery() && currentState.getPackageDestination().equals(a.getDestination())) {
+				r += reward;
+			}
+
+			if (r > V){
+				V = r;
+				best = a;
+			}
+		}
+		return best;
 	}
 
 	private static void printMap(HashMap<State, Double> potentialRewards, HashMap<State, AvailableAction> policy) {

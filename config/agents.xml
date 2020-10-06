@@ -10,7 +10,7 @@
 		<set discount-factor=".95"/>
 	</agent>
 	<agent name="reactive-random">
-		<set class-path="../random/bin"/>
+		<set class-path="random/bin"/>
 		<set class-name="random.RandomAgent"/>
 		<set discount-factor=".95"/>
 	</agent>

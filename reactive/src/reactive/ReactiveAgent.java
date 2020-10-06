@@ -59,7 +59,8 @@ public class ReactiveAgent implements ReactiveBehavior {
 		State currentState = new State(vehicle.getCurrentCity(), potentialDelivery);
 
 		// Give advice based on the state
-		AvailableAction bestAction = this.model.getBestActionChoice(currentState);
+		long r = (availableTask == null) ? 0 : availableTask.reward;
+		AvailableAction bestAction = this.model.getBestActionChoice(currentState, r);
 		if (DEBUG) System.out.println(String.format(RECOMMENDEDACTIONSTRING, currentState, bestAction));
 
 		// Choose action based on advice
