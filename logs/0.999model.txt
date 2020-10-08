@@ -1,0 +1,90 @@
+In Brest (packet to Lyon available) best action is PICKUPTO->Lyon
+In Lyon (packet to Brest available) best action is PICKUPTO->Brest
+In Paris (packet to Genève available) best action is PICKUPTO->Genève
+In Lyon (packet to Genève available) best action is PICKUPTO->Genève
+In Genève (packet to Paris available) best action is PICKUPTO->Paris
+In Genève (packet to Lyon available) best action is PICKUPTO->Lyon
+In Le Havre (no packet available) best action is GOTO->Paris
+In Brest (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Le Havre (packet to Brest available) best action is PICKUPTO->Brest
+In Le Havre (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Paris (packet to Lyon available) best action is PICKUPTO->Lyon
+In Lyon (packet to Paris available) best action is PICKUPTO->Paris
+In Strasbourg (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Bordeaux (packet to Monaco available) best action is PICKUPTO->Monaco
+In Monaco (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Lyon (no packet available) best action is GOTO->Marseille
+In Brest (packet to Monaco available) best action is GOTO->Paris
+In Monaco (packet to Brest available) best action is GOTO->Marseille
+In Le Havre (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Genève (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Strasbourg (packet to Genève available) best action is PICKUPTO->Genève
+In Le Havre (packet to Lyon available) best action is PICKUPTO->Lyon
+In Lyon (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Brest (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Strasbourg (packet to Brest available) best action is PICKUPTO->Brest
+In Bordeaux (packet to Bordeaux available) best action is GOTO->Marseille
+In Le Havre (packet to Monaco available) best action is PICKUPTO->Monaco
+In Paris (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Bordeaux (packet to Paris available) best action is PICKUPTO->Paris
+In Monaco (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Le Havre (packet to Genève available) best action is PICKUPTO->Genève
+In Genève (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Brest (packet to Brest available) best action is GOTO->Paris
+In Bordeaux (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Genève (no packet available) best action is GOTO->Lyon
+In Strasbourg (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Paris (packet to Marseille available) best action is PICKUPTO->Marseille
+In Marseille (packet to Paris available) best action is PICKUPTO->Paris
+In Le Havre (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Bordeaux (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Monaco (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Strasbourg (packet to Monaco available) best action is PICKUPTO->Monaco
+In Brest (packet to Genève available) best action is PICKUPTO->Genève
+In Genève (packet to Brest available) best action is GOTO->Lyon
+In Paris (packet to Monaco available) best action is PICKUPTO->Monaco
+In Monaco (packet to Paris available) best action is PICKUPTO->Paris
+In Marseille (packet to Genève available) best action is PICKUPTO->Genève
+In Genève (packet to Marseille available) best action is PICKUPTO->Marseille
+In Bordeaux (packet to Genève available) best action is PICKUPTO->Genève
+In Marseille (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Genève (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Monaco (no packet available) best action is GOTO->Marseille
+In Strasbourg (packet to Marseille available) best action is PICKUPTO->Marseille
+In Genève (packet to Monaco available) best action is PICKUPTO->Monaco
+In Monaco (packet to Genève available) best action is PICKUPTO->Genève
+In Monaco (packet to Monaco available) best action is GOTO->Marseille
+In Paris (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Strasbourg (packet to Paris available) best action is PICKUPTO->Paris
+In Strasbourg (no packet available) best action is GOTO->Genève
+In Marseille (packet to Lyon available) best action is PICKUPTO->Lyon
+In Lyon (packet to Marseille available) best action is PICKUPTO->Marseille
+In Brest (no packet available) best action is GOTO->Paris
+In Brest (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Bordeaux (packet to Brest available) best action is GOTO->Marseille
+In Bordeaux (no packet available) best action is GOTO->Marseille
+In Paris (packet to Paris available) best action is GOTO->Lyon
+In Bordeaux (packet to Marseille available) best action is PICKUPTO->Marseille
+In Marseille (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Lyon (packet to Lyon available) best action is PICKUPTO->Lyon
+In Marseille (no packet available) best action is GOTO->Lyon
+In Marseille (packet to Marseille available) best action is PICKUPTO->Marseille
+In Brest (packet to Marseille available) best action is PICKUPTO->Marseille
+In Le Havre (packet to Paris available) best action is PICKUPTO->Paris
+In Paris (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Marseille (packet to Brest available) best action is GOTO->Lyon
+In Bordeaux (packet to Lyon available) best action is PICKUPTO->Lyon
+In Lyon (packet to Bordeaux available) best action is PICKUPTO->Bordeaux
+In Le Havre (packet to Marseille available) best action is PICKUPTO->Marseille
+In Paris (no packet available) best action is GOTO->Lyon
+In Marseille (packet to Le Havre available) best action is PICKUPTO->Le Havre
+In Genève (packet to Genève available) best action is GOTO->Lyon
+In Brest (packet to Paris available) best action is PICKUPTO->Paris
+In Paris (packet to Brest available) best action is PICKUPTO->Brest
+In Marseille (packet to Monaco available) best action is PICKUPTO->Monaco
+In Lyon (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
+In Monaco (packet to Marseille available) best action is PICKUPTO->Marseille
+In Strasbourg (packet to Lyon available) best action is PICKUPTO->Lyon
+In Strasbourg (packet to Strasbourg available) best action is GOTO->Genève
+In Lyon (packet to Monaco available) best action is PICKUPTO->Monaco
+In Monaco (packet to Lyon available) best action is PICKUPTO->Lyon
