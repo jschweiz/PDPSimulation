@@ -41,7 +41,7 @@ In Bordeaux (packet to Le Havre available) best action is PICKUPTO->Le Havre
 In Monaco (packet to Strasbourg available) best action is PICKUPTO->Strasbourg
 In Strasbourg (packet to Monaco available) best action is PICKUPTO->Monaco
 In Brest (packet to Genève available) best action is PICKUPTO->Genève
-In Genève (packet to Brest available) best action is PICKUPTO->Brest
+In Genève (packet to Brest available) best action is GOTO->Lyon
 In Paris (packet to Monaco available) best action is PICKUPTO->Monaco
 In Monaco (packet to Paris available) best action is PICKUPTO->Paris
 In Marseille (packet to Genève available) best action is PICKUPTO->Genève

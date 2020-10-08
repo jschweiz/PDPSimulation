@@ -4,12 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        // {
+        //     "type": "java",
+        //     "name": "reactive",
+        //     "request": "launch",
+        //     "mainClass": "logist.LogistPlatform",
+        //     "args": "config/reactive_compet.xml reactive-random reactive-dummy reactive-rla"
+        // },
         {
             "type": "java",
-            "name": "Debug (Launch) - Current File",
+            "name": "deliberative",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "config/reactive_compet.xml reactive-random reactive-dummy reactive-rla"
+            "args": "deliberative/config/deliberative.xml deliberative-bfs"
         }
     ]
 }
