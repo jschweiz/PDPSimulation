@@ -20,35 +20,39 @@ public class State {
 	private Map<City, List<Task>> tasksRemaining;
 
 	// variables not defining the state
-	private Vehicle vehicule;
+	private static Vehicle vehicule;
 	private double costToReach; // to sort the priorityqueue
 	private int currentVehicleWeight; // used to check weight easily
+	private int numberOfTasksRemaining;
 
 
 	// init state constructor
 	public State(Vehicle v, TaskSet taskSet) {
-		this.vehicule = v;
+		vehicule = v;
 		this.currentCity = v.getCurrentCity();
 		this.tasksInVehicule = new HashMap<Topology.City,List<Task>>();
 		this.tasksRemaining =  new HashMap<Topology.City,List<Task>>();
 		this.costToReach = 0;
 		this.currentVehicleWeight = 0;
+		this.numberOfTasksRemaining = 0;
 
 		for (Task t : taskSet) {
 			if (!this.tasksRemaining.containsKey(t.pickupCity)) {
 				this.tasksRemaining.put(t.pickupCity, new LinkedList<Task>());
 			}
 			this.tasksRemaining.get(t.pickupCity).add(t);
+			this.numberOfTasksRemaining++;
 		}
 	}
 	// copy clone state constructor
-	public State(Vehicle ve, City c, Map<City, List<Task>> v, Map<City, List<Task>> r, double co, int w) {
-		this.vehicule = ve;
+	public State(City c, Map<City, List<Task>> v, Map<City, List<Task>> r,
+			double co, int w, int tr) {
 		this.currentCity = c;
 		this.tasksInVehicule = v;
 		this.tasksRemaining = r;
 		this.costToReach = co;
 		this.currentVehicleWeight = w;
+		this.numberOfTasksRemaining = tr;
 	}
 
 
@@ -67,6 +71,7 @@ public class State {
 		if (this.tasksRemaining.get(t.pickupCity).isEmpty()) {
 			this.tasksRemaining.remove(t.pickupCity);
 		}
+		this.numberOfTasksRemaining--;
 	}
 
 	public void deliverTask(Task t) {
@@ -119,7 +124,8 @@ public class State {
 	public State clone() {
 		Map<City, List<Task>> l1 = copyMap(tasksInVehicule);
 		Map<City, List<Task>> l2 = copyMap(tasksRemaining);
-		State newState = new State(vehicule, currentCity, l1, l2 ,costToReach, currentVehicleWeight);
+		State newState = new State(currentCity, l1, l2 ,costToReach,
+				currentVehicleWeight, numberOfTasksRemaining);
 		return newState;
 	}
 
@@ -137,7 +143,7 @@ public class State {
 
 	// no task left on map
 	public boolean allPacketsAreDelivered() {
-		return tasksInVehicule.isEmpty() && tasksRemaining.isEmpty();
+		return tasksInVehicule.isEmpty() && this.numberOfTasksRemaining == 0;
 	}
 
 

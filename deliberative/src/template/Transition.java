@@ -40,7 +40,7 @@ public class Transition  {
 				newState.deliverTask(this.task);
 				break;
 			case MOVE:
-				newState.move(destination, cost);
+				newState.move(this.destination, cost);
 				break;
 		}
 		return newState;

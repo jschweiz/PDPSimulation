@@ -43,6 +43,7 @@ public class PlanMaker {
 			
 			// if state is final (= all packets have been delivered)
 			if (state.allPacketsAreDelivered()) {
+				System.out.println("Visited " + pathTo.size() + " states.");
 				return pathToState.getList();
 			}
 
@@ -78,8 +79,16 @@ public class PlanMaker {
 	public static Plan processBFSPlan(Vehicle vehicle, TaskSet tasks) {
 		State initialState = new State(vehicle, tasks);
 
+		long startTime = System.nanoTime();
+
 		// run BFS to find less costly path to final state
 		List<Transition> bestPath = runBFS(initialState);
+
+		long duration = System.nanoTime() - startTime;
+		long heapSize = Runtime.getRuntime().totalMemory(); 
+
+		System.out.println("Calculation time: " + duration/1000000
+				+ "ms using " + heapSize/1000000 + " mb");
 
 		if (bestPath == null) return null;
 		
@@ -129,6 +138,12 @@ public class PlanMaker {
 		return plan;
 	}
 
+
+	// Setters
+
+	public static void setDEBUG(boolean b) {
+		DEBUG = b;
+	}
 
 	// PRINTING FOR DEBUG
 
