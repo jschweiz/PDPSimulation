@@ -14,12 +14,15 @@ import logist.topology.Topology.City;
 
 public class State {
 
-	private Vehicle vehicule;
+	// variables defining the state 
 	private City currentCity;
 	private Map<City, List<Task>> tasksInVehicule;
 	private Map<City, List<Task>> tasksRemaining;
 
-	private double costToReach;
+	// variables not defining the state
+	private Vehicle vehicule;
+	private double costToReach; // to sort the priorityqueue
+	private int currentVehicleWeight; // used to check weight easily
 
 
 	// init state constructor
@@ -29,6 +32,7 @@ public class State {
 		this.tasksInVehicule = new HashMap<Topology.City,List<Task>>();
 		this.tasksRemaining =  new HashMap<Topology.City,List<Task>>();
 		this.costToReach = 0;
+		this.currentVehicleWeight = 0;
 
 		for (Task t : taskSet) {
 			if (!this.tasksRemaining.containsKey(t.pickupCity)) {
@@ -38,12 +42,13 @@ public class State {
 		}
 	}
 	// copy clone state constructor
-	public State(Vehicle ve, City c, Map<City, List<Task>> v, Map<City, List<Task>> r, double co) {
+	public State(Vehicle ve, City c, Map<City, List<Task>> v, Map<City, List<Task>> r, double co, int w) {
 		this.vehicule = ve;
 		this.currentCity = c;
 		this.tasksInVehicule = v;
 		this.tasksRemaining = r;
 		this.costToReach = co;
+		this.currentVehicleWeight = w;
 	}
 
 
@@ -55,6 +60,7 @@ public class State {
 			this.tasksInVehicule.put(t.deliveryCity, new LinkedList<Task>());
 		}
 		this.tasksInVehicule.get(t.deliveryCity).add(t);
+		this.currentVehicleWeight += t.weight;
 
 		// remove it from the map as it was taken
 		this.tasksRemaining.get(t.pickupCity).remove(t);
@@ -69,6 +75,7 @@ public class State {
 		if (this.tasksInVehicule.get(t.deliveryCity).isEmpty()) {
 			this.tasksInVehicule.remove(t.deliveryCity);
 		}
+		this.currentVehicleWeight -= t.weight;
 	}
 
 	public void move(City dest, double cost) {
@@ -91,7 +98,7 @@ public class State {
 				for (Task t : tasksRemaining.get(currentCity)) {
 
 					// check if we can pickup the task
-					if (t.weight + getVehicleWeight() <= vehicule.capacity()) {
+					if (t.weight + this.currentVehicleWeight <= vehicule.capacity()) {
 						list.add(new Transition(Transition.Action.PICKUP, t));
 					}
 				}
@@ -106,27 +113,17 @@ public class State {
 		return list;
 	}
 
-	public int getVehicleWeight() {
-		int tot = 0;
-		for (City c : tasksInVehicule.keySet()) {
-			for (Task t : tasksInVehicule.get(c)) {
-				tot += t.weight;
-			}
-		}
-		return tot;
-	}
-
 
 	// Clone state for transitions
 
 	public State clone() {
-		Map<City, List<Task>> l1 = copy(tasksInVehicule);
-		Map<City, List<Task>> l2 = copy(tasksRemaining);
-		State newState = new State(vehicule, currentCity, l1, l2 ,costToReach);
+		Map<City, List<Task>> l1 = copyMap(tasksInVehicule);
+		Map<City, List<Task>> l2 = copyMap(tasksRemaining);
+		State newState = new State(vehicule, currentCity, l1, l2 ,costToReach, currentVehicleWeight);
 		return newState;
 	}
 
-	static private Map<City, List<Task>> copy(Map<City, List<Task>> p) {
+	static private Map<City, List<Task>> copyMap(Map<City, List<Task>> p) {
 		Map<City, List<Task>> newMap = new HashMap<Topology.City,List<Task>>();
 		for (City c : p.keySet()) {
 			newMap.put(c, new LinkedList<Task>());
@@ -138,8 +135,8 @@ public class State {
 	}
 
 
-	public boolean isCompleteState() {
-		// no task left on map
+	// no task left on map
+	public boolean allPacketsAreDelivered() {
 		return tasksInVehicule.isEmpty() && tasksRemaining.isEmpty();
 	}
 
@@ -161,7 +158,7 @@ public class State {
 
 	@Override
 	public String toString() {
-		return toStringwH() + "["+hashCode()+"]";
+		return toStringwH() + "[" + hashCode() + "]";
 	}
 
 	@Override
@@ -182,7 +179,7 @@ public class State {
 		for (int i = 0; i< 15 - len; i++) {
 			complete += " ";
 		}
-		String string = "{" + currentCity.toString() + complete+ ";";
+		String string = "{" + currentCity.toString() + complete + ";";
 
 		string += "ONMAP:[";
 		for (City c: tasksRemaining.keySet()) {
