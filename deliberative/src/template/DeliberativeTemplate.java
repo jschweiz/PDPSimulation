@@ -51,7 +51,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		String algorithmName = agent.readProperty("algorithm", String.class, "ASTAR");
 		
 		// Throws IllegalArgumentException if algorithm is unknown
-		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
+		algorithm = Algorithm.valueOf(algorithmName.replaceAll("-", "").toUpperCase());
 		
 		// ...
 	}
@@ -64,7 +64,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = PlanMaker.processBFSPlan(vehicle, tasks);
+			plan = PlanMaker.processASTARPlan(vehicle, tasks);
 			break;
 		case BFS:
 			// ...

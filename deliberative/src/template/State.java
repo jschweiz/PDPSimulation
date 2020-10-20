@@ -155,8 +155,26 @@ public class State {
 		}
 	}
 
+	public static class SortByEstimatedCost implements Comparator<State> {
+		public int compare(State a, State b) {
+			return Double.compare(a.costThroughState(), b.costThroughState());
+		}
+	}
+
+	
+	// g(n) : cost to reach this state
 	public double getCostToReach() {
 		return costToReach;
+	}
+
+	// h(n) : heuristic. Estimate cost to reach a goal state from current state
+	public double minCostToGoal() { 
+		return 0;
+	}
+
+	// f(n) : estimate cost to go from initial to a goal state passing through this state
+	public double costThroughState() {
+		return this.getCostToReach() + this.minCostToGoal();
 	}
 
 
