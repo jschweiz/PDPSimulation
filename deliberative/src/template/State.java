@@ -1,7 +1,9 @@
 package template;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -169,12 +171,13 @@ public class State {
 
 	// h(n) : heuristic. Estimate cost to reach a goal state from current state
 	public double minCostToGoal() { 
-		return 0;
+		return findValueMST();
 	}
 
 	// f(n) : estimate cost to go from initial to a goal state passing through this state
 	public double costThroughState() {
-		return this.getCostToReach() + this.minCostToGoal();
+		// return this.getCostToReach() + this.minCostToGoal();
+		return this.getCostToReach();
 	}
 
 
@@ -221,6 +224,50 @@ public class State {
 			}
 		}
 		return string + "}";
+	}
+
+	// Find cost of least significant tree (lower bound of h(n))
+	public double findValueMST(){
+		HashSet<City> graph = new HashSet<City>();
+
+		// Identify subgraph of cities yet to be visited
+		graph.add(currentCity);
+		for (Map.Entry<City, List<Task>> entry : tasksInVehicule.entrySet()) {
+			if (!entry.getValue().isEmpty())
+				graph.add(entry.getKey());
+		}
+		for (List<Task> remainingTaskList : tasksRemaining.values()) {
+			for (Task t : remainingTaskList){
+				graph.add(t.pickupCity);
+				graph.add(t.deliveryCity);
+			}
+		}
+
+		// Map int to city
+		int numberNodes = graph.size();
+		List<City> nodes = new ArrayList<City>(graph);
+		UnionFind unionfind = new UnionFind(numberNodes);
+		List<Edge> edges = new ArrayList<Edge>();
+		
+		// Sort edges in ascending order
+		for (int i = 0; i < numberNodes-1; i++) {
+			for (int j = i+1; j < numberNodes; j++) {
+				double distance = nodes.get(i).distanceTo(nodes.get(j));
+				edges.add(new Edge(i, j, distance));
+			}
+		}
+		edges.sort(new Edge.SortDistance());
+
+		double totalCost = 0;
+		for (Edge e : edges){
+			int a = e.getA();
+			int b = e.getB();
+			if (unionfind.find(a) != unionfind.find(b)){
+				totalCost += e.getDistance();
+				unionfind.union(a, b);
+			}
+		}
+		return totalCost;
 	}
 
 }
