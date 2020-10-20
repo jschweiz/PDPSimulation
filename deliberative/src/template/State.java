@@ -27,6 +27,8 @@ public class State {
 	private int currentVehicleWeight; // used to check weight easily
 	private int numberOfTasksRemaining;
 
+	private double estimatedCostThroughState;
+
 
 	// init state constructor
 	public State(Vehicle v, TaskSet taskSet) {
@@ -37,6 +39,7 @@ public class State {
 		this.costToReach = 0;
 		this.currentVehicleWeight = 0;
 		this.numberOfTasksRemaining = 0;
+		this.estimatedCostThroughState = 0;
 
 		for (Task t : taskSet) {
 			if (!this.tasksRemaining.containsKey(t.pickupCity)) {
@@ -49,6 +52,7 @@ public class State {
 	// copy clone state constructor
 	public State(City c, Map<City, List<Task>> v, Map<City, List<Task>> r,
 			double co, int w, int tr) {
+		this.estimatedCostThroughState = 0;
 		this.currentCity = c;
 		this.tasksInVehicule = v;
 		this.tasksRemaining = r;
@@ -113,8 +117,7 @@ public class State {
 
 			// just add neightbors to possible transitions
 			for (City c : currentCity.neighbors()) {
-				list.add(new Transition(Transition.Action.MOVE, c,
-						currentCity.distanceTo(c) * vehicule.costPerKm()));
+				list.add(new Transition(Transition.Action.MOVE, c, currentCity.distanceTo(c) * vehicule.costPerKm()));
 			}
 		}
 		return list;
@@ -177,7 +180,10 @@ public class State {
 	// f(n) : estimate cost to go from initial to a goal state passing through this state
 	public double costThroughState() {
 		// return this.getCostToReach() + this.minCostToGoal();
-		return this.getCostToReach();
+		if (this.estimatedCostThroughState != 0)
+			return this.estimatedCostThroughState;
+		this.estimatedCostThroughState = this.getCostToReach() + this.minCostToGoal();
+		return this.estimatedCostThroughState;
 	}
 
 
