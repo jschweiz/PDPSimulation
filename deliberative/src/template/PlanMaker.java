@@ -5,9 +5,11 @@ import logist.simulation.Vehicle;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import logist.plan.Plan;
@@ -25,12 +27,13 @@ public class PlanMaker {
 
 	// FUNCTION TO RUN ALGORITHMS
 
-	private static List<Transition> runBFS(State initialState) {
+	private static List<TransitionList> runBFS(State initialState) {
 
-		PriorityQueue<State> Q = new PriorityQueue<State>(new State.SortByCost());
+		Queue<State> Q = new LinkedList<State>();
 		Set<State> C = new HashSet<State>();
 
 		Map<State,TransitionList> pathTo = new HashMap<State,TransitionList>();
+		List<TransitionList> validPaths = new LinkedList<TransitionList>();
 
 		Q.add(initialState);
 		pathTo.put(initialState, new TransitionList());
@@ -43,8 +46,7 @@ public class PlanMaker {
 			
 			// if state is final (= all packets have been delivered)
 			if (state.allPacketsAreDelivered()) {
-				System.out.println("Visited " + pathTo.size() + " states.");
-				return pathToState.getList();
+				validPaths.add(pathToState);
 			}
 
 			// if state not visited yet
@@ -70,7 +72,23 @@ public class PlanMaker {
 				if (DEBUG) printStates(Q, C, pathTo);
 			}
 		}
-		return null;
+		return validPaths;
+	}
+
+	private static List<Transition> findBestPath(List<TransitionList> validPaths) {
+		TransitionList bestPath = null;
+		int bestCost = Integer.MAX_VALUE;
+		for (TransitionList tl : validPaths) {
+			int interCost = tl.getCost();
+			if (interCost < bestCost) {
+				bestCost = interCost;
+				bestPath = tl;
+			}
+		}
+		if (bestPath == null) {
+			return null;
+		}
+		return bestPath.getList();
 	}
 
 
@@ -82,7 +100,8 @@ public class PlanMaker {
 		long startTime = System.nanoTime();
 
 		// run BFS to find less costly path to final state
-		List<Transition> bestPath = runBFS(initialState);
+		List<TransitionList> validPaths = runBFS(initialState);
+		List<Transition> bestPath = findBestPath(validPaths);
 
 		long duration = System.nanoTime() - startTime;
 		long heapSize = Runtime.getRuntime().totalMemory(); 
@@ -113,7 +132,7 @@ public class PlanMaker {
 	private static List<Transition> runASTAR(State initialState) {
 		PriorityQueue<State> Q = new PriorityQueue<State>(new State.SortByEstimatedCost());
 		Set<State> C = new HashSet<State>();
-		Map<State, Double> C_costs = new HashMap<>(); // Cost of state last time it was visited
+		Map<State, Double> C_costs = new HashMap<State, Double>(); // Cost of state last time it was visited
 
 		Map<State,TransitionList> pathTo = new HashMap<State,TransitionList>();
 
@@ -231,7 +250,7 @@ public class PlanMaker {
 		}
 	}
 
-	public static void printStates(PriorityQueue<State> Q, Set<State> C, Map<State,TransitionList> P) {
+	public static void printStates(Queue<State> Q, Set<State> C, Map<State,TransitionList> P) {
 		System.out.println("\nC STATES:");
 		for (State s : C) {
 			System.out.println("------------> " + s);
