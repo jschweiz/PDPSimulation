@@ -5,6 +5,7 @@ import logist.simulation.Vehicle;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -27,9 +28,11 @@ public class PlanMaker {
 
 	private static List<Transition> runBFS(State initialState) {
 
-		PriorityQueue<State> Q = new PriorityQueue<State>(new State.SortByCost());
+		LinkedList<State> Q = new LinkedList<State>();
 		Set<State> C = new HashSet<State>();
+		Map<State, Double> C_costs = new HashMap<State, Double>(); // Cost of state last time it was visited
 
+		LinkedList<TransitionList> allGoalPaths = new LinkedList<TransitionList>();
 		Map<State,TransitionList> pathTo = new HashMap<State,TransitionList>();
 
 		Q.add(initialState);
@@ -39,18 +42,20 @@ public class PlanMaker {
 			// get first element
 			State state = Q.poll();
 			TransitionList pathToState = pathTo.get(state);
+			double costToReachState = pathToState.getCost();
 			if (DEBUG) System.out.println(String.format(PRINT1, state, pathToState));
 			
 			// if state is final (= all packets have been delivered)
 			if (state.allPacketsAreDelivered()) {
 				// System.out.println("Visited " + pathTo.size() + " states.");
 				System.out.println(pathToState + "cost: " + pathToState.getCost() + ":" + state.getCostToReach());
-				return pathToState.getList();
+				allGoalPaths.add(pathToState);
 			}
 
 			// if state not visited yet
-			if (!C.contains(state)) {
+			if (!C.contains(state) || costToReachState < C_costs.get(state)) {
 				C.add(state);
+				C_costs.put(state, costToReachState);
 
 				// get all possible transitions
 				List<Transition> possibleTransitions = state.getTransitions();
@@ -80,10 +85,17 @@ public class PlanMaker {
 
 				// System.out.println("  ");
 
-				if (DEBUG) printStates(Q, C, pathTo);
+				// if (DEBUG) printStates(Q, C, pathTo);
 			}
 		}
-		return null;
+
+
+		TransitionList best = allGoalPaths.getFirst();
+		for (TransitionList tl : allGoalPaths){
+			if (tl.getCost() < best.getCost())
+				best = tl;
+		}
+		return best.getList();
 	}
 
 
