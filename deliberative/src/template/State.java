@@ -178,12 +178,13 @@ public class State {
 
 	// h(n) : heuristic. Estimate cost to reach a goal state from current state
 	public double minCostToGoal() { 
-		return findValueMST();
+		// return findValueMST();
+		return maxDistance();
 	}
 
 	// f(n) : estimate cost to go from initial to a goal state passing through this state
 	public double costThroughState() {
-		// return this.getCostToReach() + this.minCostToGoal();
+		// return this.getCostToReach();
 		if (this.estimatedCostThroughState != 0)
 			return this.estimatedCostThroughState;
 		this.estimatedCostThroughState = this.getCostToReach() + this.minCostToGoal();
@@ -234,6 +235,29 @@ public class State {
 			}
 		}
 		return string + "}";
+	}
+
+	// Other heuristic h(n)
+	public double maxDistance() {
+
+		double maxDistance = 0;
+		// Identify subgraph of cities yet to be visited
+		for (Map.Entry<City, List<Task>> entry : tasksInVehicule.entrySet()) {
+			for (Task t : entry.getValue()){
+				double d = currentCity.distanceTo(t.deliveryCity);
+				if (d > maxDistance)
+					maxDistance = d;
+			}
+		}
+		for (List<Task> remainingTaskList : tasksRemaining.values()) {
+			for (Task t : remainingTaskList){
+				double d = t.pickupCity.distanceTo(t.deliveryCity);
+				d += currentCity.distanceTo(t.pickupCity);
+				if (d > maxDistance)
+					maxDistance = d;
+			}
+		}
+		return maxDistance;
 	}
 
 	// Find cost of least significant tree (lower bound of h(n))

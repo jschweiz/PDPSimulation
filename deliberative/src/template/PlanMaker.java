@@ -140,6 +140,7 @@ public class PlanMaker {
 			// get first element
 			State state = Q.poll();
 			TransitionList pathToState = pathTo.get(state);
+			double costToReachState = pathToState.getCost();
 			if (DEBUG) System.out.println(String.format(PRINT1, state, pathToState));
 			
 			// if state is final (= all packets have been delivered)
@@ -149,9 +150,9 @@ public class PlanMaker {
 			}
 
 			// if state not visited yet
-			if (!C.contains(state) || state.getCostToReach() < C_costs.get(state) ) {
+			if (!C.contains(state) || costToReachState < C_costs.get(state) ) {
 				C.add(state);
-				C_costs.put(state, state.getCostToReach());
+				C_costs.put(state, costToReachState);
 
 				// get all possible transitions
 				List<Transition> possibleTransitions = state.getTransitions();
@@ -160,12 +161,13 @@ public class PlanMaker {
 				for (Transition t : possibleTransitions) {
 					State nextState = t.getNextState(state);
 
-					// add to list to visit
-					Q.add(nextState);
-
 					// clone the path to this state and add transition to next
 					TransitionList pathToNextState = pathToState.clone();
 					pathToNextState.add(t);
+					double co = pathToNextState.getCost();
+					nextState.setCostToReach(co);
+
+					Q.add(nextState);
 					pathTo.put(nextState, pathToNextState);
 				}
 
