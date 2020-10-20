@@ -113,7 +113,7 @@ public class PlanMaker {
 	private static List<Transition> runASTAR(State initialState) {
 		PriorityQueue<State> Q = new PriorityQueue<State>(new State.SortByEstimatedCost());
 		Set<State> C = new HashSet<State>();
-		Map<State, Double> C_costs = new HashMap<>(); // Cost of state last time it was visited
+		Map<State, Double> C_costs = new HashMap<State, Double>(); // Cost of state last time it was visited
 
 		Map<State,TransitionList> pathTo = new HashMap<State,TransitionList>();
 
