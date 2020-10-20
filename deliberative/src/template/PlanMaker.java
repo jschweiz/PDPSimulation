@@ -66,7 +66,6 @@ public class PlanMaker {
 
 					// verify state cost
 					double co = nextState.getCostToReach();
-					// nextState.setCostToReach(co);
 
 					if (!pathTo.containsKey(nextState)) {
 						Q.add(nextState);
@@ -76,8 +75,6 @@ public class PlanMaker {
 						Q.add(nextState);
 						pathTo.put(nextState, pathToNextState);
 					}
-					
-					// System.out.println(pathToNextState);
 
 				}
 
@@ -87,6 +84,11 @@ public class PlanMaker {
 			}
 		}
 		return null;
+	}
+
+
+	void planCancelled(TaskSet carriedTasks) {
+		// do nothing
 	}
 
 
