@@ -1,7 +1,9 @@
-
 *.class
 *.class
 *.class
 bin/*
 /.metadata/
 .classpath
+random/.classpath
+.project
+deliberative/bin/
