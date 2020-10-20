@@ -164,11 +164,19 @@ public class PlanMaker {
 					// clone the path to this state and add transition to next
 					TransitionList pathToNextState = pathToState.clone();
 					pathToNextState.add(t);
-					double co = pathToNextState.getCost();
-					nextState.setCostToReach(co);
 
-					Q.add(nextState);
-					pathTo.put(nextState, pathToNextState);
+					// verify state cost
+					double co = nextState.getCostToReach();
+					// nextState.setCostToReach(co);
+
+					if (!pathTo.containsKey(nextState)) {
+						Q.add(nextState);
+						pathTo.put(nextState, pathToNextState);
+					} else if (pathTo.get(nextState).getCost() > co) {
+						Q.remove(nextState);
+						Q.add(nextState);
+						pathTo.put(nextState, pathToNextState);
+					}
 				}
 
 				if (DEBUG) printStates(Q, C, pathTo);
