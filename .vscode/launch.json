@@ -16,7 +16,7 @@
             "name": "deliberative",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "deliberative/config/deliberative.xml deliberative-bfs"
+            "args": "deliberative/config/deliberative.xml deliberative-bfs deliberative-random"
         }
     ]
 }

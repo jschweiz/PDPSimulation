@@ -42,6 +42,11 @@ public class State {
 			tasksRemaining.add(t);
 			this.numberOfTasksRemaining++;
 		}
+
+		for (Task t : v.getCurrentTasks()) {
+			tasksInVehicule.add(t);
+			this.currentVehicleWeight += t.weight;
+		}
 	}
 	// copy clone state constructor
 	public State(City c, HashSet<Task> v, HashSet<Task> r,
