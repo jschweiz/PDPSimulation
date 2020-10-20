@@ -43,7 +43,8 @@ public class PlanMaker {
 			
 			// if state is final (= all packets have been delivered)
 			if (state.allPacketsAreDelivered()) {
-				System.out.println("Visited " + pathTo.size() + " states.");
+				// System.out.println("Visited " + pathTo.size() + " states.");
+				System.out.println(pathToState + "cost: " + pathToState.getCost() + ":" + state.getCostToReach());
 				return pathToState.getList();
 			}
 
@@ -58,14 +59,29 @@ public class PlanMaker {
 				for (Transition t : possibleTransitions) {
 					State nextState = t.getNextState(state);
 
-					// add to list to visit
-					Q.add(nextState);
 
 					// clone the path to this state and add transition to next
 					TransitionList pathToNextState = pathToState.clone();
 					pathToNextState.add(t);
-					pathTo.put(nextState, pathToNextState);
+
+					// verify state cost
+					double co = nextState.getCostToReach();
+					// nextState.setCostToReach(co);
+
+					if (!pathTo.containsKey(nextState)) {
+						Q.add(nextState);
+						pathTo.put(nextState, pathToNextState);
+					} else if (pathTo.get(nextState).getCost() > co) {
+						Q.remove(nextState);
+						Q.add(nextState);
+						pathTo.put(nextState, pathToNextState);
+					}
+					
+					// System.out.println(pathToNextState);
+
 				}
+
+				// System.out.println("  ");
 
 				if (DEBUG) printStates(Q, C, pathTo);
 			}

@@ -50,9 +50,9 @@ public class Transition  {
 	// tostring function for printing
 	public String toString() {
 		if ( action == Action.MOVE) {
-			return "(MOVETO" + this.destination.toString() + ")";
+			return "(MOVETO" + this.destination.toString() + ":"+ this.cost+")";
 		}
-		return "(" + action.toString() + ":" + task.deliveryCity.toString()+")";
+		return "(" + action.toString() + ":" + task.deliveryCity.toString()+":"+ this.cost+")";
 	}
 
 

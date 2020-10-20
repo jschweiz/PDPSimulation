@@ -161,6 +161,10 @@ public class State {
 		}
 	}
 
+	public void setCostToReach(double c) {
+		this.costToReach = c;
+	}
+
 	
 	// g(n) : cost to reach this state
 	public double getCostToReach() {
