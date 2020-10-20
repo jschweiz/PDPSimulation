@@ -63,16 +63,14 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
 		case ASTAR:
-			// ...
 			plan = PlanMaker.processASTARPlan(vehicle, tasks);
 			break;
 		case BFS:
-			// ...
 			plan = PlanMaker.processBFSPlan(vehicle, tasks);
 			break;
 		case NAIVE:
-			// ...
 			plan = PlanMaker.processNAIVEPlan(vehicle, tasks);
+			break;
 		default:
 			throw new AssertionError("Should not happen.");
 		}		
