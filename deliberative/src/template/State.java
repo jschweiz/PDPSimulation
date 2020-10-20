@@ -1,25 +1,21 @@
 package template;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskSet;
-import logist.topology.Topology;
 import logist.topology.Topology.City;
 
 public class State {
 
 	// variables defining the state 
 	private City currentCity;
-	private Map<City, List<Task>> tasksInVehicule;
-	private Map<City, List<Task>> tasksRemaining;
+	private HashSet<Task> tasksInVehicule;
+	private HashSet<Task> tasksRemaining;
 
 	// variables not defining the state
 	private static Vehicle vehicule;
@@ -34,23 +30,20 @@ public class State {
 	public State(Vehicle v, TaskSet taskSet) {
 		vehicule = v;
 		this.currentCity = v.getCurrentCity();
-		this.tasksInVehicule = new HashMap<Topology.City,List<Task>>();
-		this.tasksRemaining =  new HashMap<Topology.City,List<Task>>();
+		this.tasksInVehicule = new HashSet<Task>();
+		this.tasksRemaining =  new HashSet<Task>();
 		this.costToReach = 0;
 		this.currentVehicleWeight = 0;
 		this.numberOfTasksRemaining = 0;
 		this.estimatedCostThroughState = 0;
 
 		for (Task t : taskSet) {
-			if (!this.tasksRemaining.containsKey(t.pickupCity)) {
-				this.tasksRemaining.put(t.pickupCity, new LinkedList<Task>());
-			}
-			this.tasksRemaining.get(t.pickupCity).add(t);
+			tasksRemaining.add(t);
 			this.numberOfTasksRemaining++;
 		}
 	}
 	// copy clone state constructor
-	public State(City c, Map<City, List<Task>> v, Map<City, List<Task>> r,
+	public State(City c, HashSet<Task> v, HashSet<Task> r,
 			double co, int w, int tr) {
 		this.estimatedCostThroughState = 0;
 		this.currentCity = c;
@@ -66,26 +59,17 @@ public class State {
 
 	public void pickupTask(Task t) {
 		// add the task in the vehicle
-		if (!this.tasksInVehicule.containsKey(t.deliveryCity)) {
-			this.tasksInVehicule.put(t.deliveryCity, new LinkedList<Task>());
-		}
-		this.tasksInVehicule.get(t.deliveryCity).add(t);
+		this.tasksInVehicule.add(t);
 		this.currentVehicleWeight += t.weight;
 
 		// remove it from the map as it was taken
-		this.tasksRemaining.get(t.pickupCity).remove(t);
-		if (this.tasksRemaining.get(t.pickupCity).isEmpty()) {
-			this.tasksRemaining.remove(t.pickupCity);
-		}
+		this.tasksRemaining.remove(t);
 		this.numberOfTasksRemaining--;
 	}
 
 	public void deliverTask(Task t) {
 		// remove the task from the vehicle
-		this.tasksInVehicule.get(t.deliveryCity).remove(t);
-		if (this.tasksInVehicule.get(t.deliveryCity).isEmpty()) {
-			this.tasksInVehicule.remove(t.deliveryCity);
-		}
+		this.tasksInVehicule.remove(t);
 		this.currentVehicleWeight -= t.weight;
 	}
 
@@ -101,25 +85,23 @@ public class State {
 		List<Transition> list = new LinkedList<Transition>();
 
 		// if vehicule contains a task to this city, then only one action: deliver it
-		if (tasksInVehicule.containsKey(currentCity)) {
-			list.add(new Transition(Transition.Action.DELIVER, tasksInVehicule.get(currentCity).get(0)));
-		} else {
-			// if tasks are available, add possible transition to take the task
-			if (tasksRemaining.containsKey(currentCity)) {
-				for (Task t : tasksRemaining.get(currentCity)) {
-
-					// check if we can pickup the task
-					if (t.weight + this.currentVehicleWeight <= vehicule.capacity()) {
-						list.add(new Transition(Transition.Action.PICKUP, t));
-					}
-				}
-			}
-
-			// just add neightbors to possible transitions
-			for (City c : currentCity.neighbors()) {
-				list.add(new Transition(Transition.Action.MOVE, c, currentCity.distanceTo(c) * vehicule.costPerKm()));
+		for (Task t : tasksInVehicule) {
+			if (t.deliveryCity.equals(currentCity)){
+				list.add(new Transition(Transition.Action.DELIVER, t));
+				return list;
 			}
 		}
+
+		for (Task t : tasksRemaining) {
+			if (t.pickupCity.equals(currentCity) &&  (t.weight + this.currentVehicleWeight <= vehicule.capacity() ) ) {
+				list.add(new Transition(Transition.Action.PICKUP, t));
+			}
+		}
+
+		for (City c : currentCity.neighbors()) {
+			list.add(new Transition(Transition.Action.MOVE, c, currentCity.distanceTo(c) * vehicule.costPerKm()));
+		}
+
 		return list;
 	}
 
@@ -127,24 +109,14 @@ public class State {
 	// Clone state for transitions
 
 	public State clone() {
-		Map<City, List<Task>> l1 = copyMap(tasksInVehicule);
-		Map<City, List<Task>> l2 = copyMap(tasksRemaining);
+		HashSet<Task> l1 = new HashSet<Task>();
+		l1.addAll(tasksInVehicule);
+		HashSet<Task> l2 = new HashSet<Task>();
+		l2.addAll(tasksRemaining);
 		State newState = new State(currentCity, l1, l2 ,costToReach,
 				currentVehicleWeight, numberOfTasksRemaining);
 		return newState;
 	}
-
-	static private Map<City, List<Task>> copyMap(Map<City, List<Task>> p) {
-		Map<City, List<Task>> newMap = new HashMap<Topology.City,List<Task>>();
-		for (City c : p.keySet()) {
-			newMap.put(c, new LinkedList<Task>());
-			for (Task t : p.get(c)) {
-				newMap.get(c).add(t);
-			}
-		}
-		return newMap;
-	}
-
 
 	// no task left on map
 	public boolean allPacketsAreDelivered() {
@@ -196,45 +168,39 @@ public class State {
 
 	@Override
 	public String toString() {
-		return toStringwH() + "[" + hashCode() + "]";
+		return "nuuuuul";
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof State)) return false;
 		State s = (State) o;
-		return toStringwH().equals(s.toStringwH());
+
+		if (!s.currentCity.equals(this.currentCity)){
+			return false;
+		}
+		
+		if (!s.tasksInVehicule.equals(this.tasksInVehicule))
+			return false;
+
+		if (!s.tasksRemaining.equals(this.tasksRemaining))
+			return false;
+
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return toStringwH().hashCode();
-	}
-
-	public String toStringwH() {
-		int len = currentCity.toString().length();
-		String complete = "";
-		for (int i = 0; i< 15 - len; i++) {
-			complete += " ";
+		int h = 0;
+		h += currentCity.hashCode();
+		
+		for (Task t : tasksInVehicule){
+			h += t.toString().hashCode();
 		}
-		String string = "{" + currentCity.toString() + complete + ";";
-
-		string += "ONMAP:[";
-		for (City c: tasksRemaining.keySet()) {
-			string += "   AT" + c.toString() + "TO:";
-			for (Task t : tasksRemaining.get(c)) {
-				string += t.deliveryCity.toString() + ",";
-			}
+		for (Task t : tasksRemaining){
+			h += 3*t.toString().hashCode();
 		}
-
-		string += "]   INVEHICLE:[";
-		for (City c: tasksInVehicule.keySet()) {
-			string += "TO" + c.toString() + ":";
-			for (Task t : tasksInVehicule.get(c)) {
-				string +=  t.toString() + ",";
-			}
-		}
-		return string + "}";
+		return h;
 	}
 
 	// Other heuristic h(n)
@@ -242,66 +208,63 @@ public class State {
 
 		double maxDistance = 0;
 		// Identify subgraph of cities yet to be visited
-		for (Map.Entry<City, List<Task>> entry : tasksInVehicule.entrySet()) {
-			for (Task t : entry.getValue()){
-				double d = currentCity.distanceTo(t.deliveryCity);
-				if (d > maxDistance)
-					maxDistance = d;
-			}
+		for (Task t : tasksInVehicule) {
+			double d = currentCity.distanceTo(t.deliveryCity);
+			if (d > maxDistance)
+				maxDistance = d;
 		}
-		for (List<Task> remainingTaskList : tasksRemaining.values()) {
-			for (Task t : remainingTaskList){
-				double d = t.pickupCity.distanceTo(t.deliveryCity);
-				d += currentCity.distanceTo(t.pickupCity);
-				if (d > maxDistance)
-					maxDistance = d;
-			}
+		
+		for (Task t : tasksRemaining) {
+			double d = t.pickupCity.distanceTo(t.deliveryCity);
+			d += currentCity.distanceTo(t.pickupCity);
+			if (d > maxDistance)
+				maxDistance = d;
 		}
 		return maxDistance;
 	}
 
 	// Find cost of least significant tree (lower bound of h(n))
-	public double findValueMST(){
-		HashSet<City> graph = new HashSet<City>();
+	// public double findValueMST(){
+	// 	HashSet<City> graph = new HashSet<City>();
 
-		// Identify subgraph of cities yet to be visited
-		graph.add(currentCity);
-		for (Map.Entry<City, List<Task>> entry : tasksInVehicule.entrySet()) {
-			if (!entry.getValue().isEmpty())
-				graph.add(entry.getKey());
-		}
-		for (List<Task> remainingTaskList : tasksRemaining.values()) {
-			for (Task t : remainingTaskList){
-				graph.add(t.pickupCity);
-				graph.add(t.deliveryCity);
-			}
-		}
+	// 	// Identify subgraph of cities yet to be visited
+	// 	graph.add(currentCity);
+	// 	for (Map.Entry<City, List<Task>> entry : tasksInVehicule.entrySet()) {
+	// 		if (!entry.getValue().isEmpty())
+	// 			graph.add(entry.getKey());
+	// 	}
+	// 	for (List<Task> remainingTaskList : tasksRemaining.values()) {
+	// 		for (Task t : remainingTaskList){
+	// 			graph.add(t.pickupCity);
+	// 			graph.add(t.deliveryCity);
+	// 		}
+	// 	}
 
-		// Map int to city
-		int numberNodes = graph.size();
-		List<City> nodes = new ArrayList<City>(graph);
-		UnionFind unionfind = new UnionFind(numberNodes);
-		List<Edge> edges = new ArrayList<Edge>();
+	// 	// Map int to city
+	// 	int numberNodes = graph.size();
+	// 	List<City> nodes = new ArrayList<City>(graph);
+	// 	UnionFind unionfind = new UnionFind(numberNodes);
+	// 	List<Edge> edges = new ArrayList<Edge>();
 		
-		// Sort edges in ascending order
-		for (int i = 0; i < numberNodes-1; i++) {
-			for (int j = i+1; j < numberNodes; j++) {
-				double distance = nodes.get(i).distanceTo(nodes.get(j));
-				edges.add(new Edge(i, j, distance));
-			}
-		}
-		edges.sort(new Edge.SortDistance());
+	// 	// Sort edges in ascending order
+	// 	for (int i = 0; i < numberNodes-1; i++) {
+	// 		for (int j = i+1; j < numberNodes; j++) {
+	// 			double distance = nodes.get(i).distanceTo(nodes.get(j));
+	// 			edges.add(new Edge(i, j, distance));
+	// 		}
+	// 	}
+	// 	edges.sort(new Edge.SortDistance());
 
-		double totalCost = 0;
-		for (Edge e : edges){
-			int a = e.getA();
-			int b = e.getB();
-			if (unionfind.find(a) != unionfind.find(b)){
-				totalCost += e.getDistance();
-				unionfind.union(a, b);
-			}
-		}
-		return totalCost;
-	}
+	// 	double totalCost = 0;
+	// 	for (Edge e : edges){
+	// 		int a = e.getA();
+	// 		int b = e.getB();
+	// 		if (unionfind.find(a) != unionfind.find(b)){
+	// 			totalCost += e.getDistance();
+	// 			unionfind.union(a, b);
+	// 		}
+	// 	}
+	// 	return totalCost;
+	// }
 
 }

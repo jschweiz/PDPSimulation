@@ -2,8 +2,6 @@ package template;
 
 import java.util.Comparator;
 
-import logist.topology.Topology.City;
-
 public class Edge {
     private int a, b;
     private double distance;
