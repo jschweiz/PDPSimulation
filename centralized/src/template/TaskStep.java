@@ -42,7 +42,11 @@ public class TaskStep {
         return i + NUM_TASKS;
     }
 
-    
+    public static int getPickupId(int i) {
+        return i - NUM_TASKS;
+    }
+
+
     // hashcode, equals and tostring
     public int hashCode() {
         return t.hashCode() + (isPickup?1:0) + this.id;

@@ -157,6 +157,10 @@ public class VariableSet {
         int tPre1 = NULL;
         int t1 = nextTaskV[vi];
         int count = 1;
+        boolean special = false;
+        if (count >= tIdX1) {
+            special = true;
+        }
         while (count < tIdX1) {
             tPre1 = t1;
             t1 = nextTaskT[t1];
@@ -173,16 +177,48 @@ public class VariableSet {
         }
         int tPost2 = nextTaskT[t2];
         if (tPost1 == t2) {
-            nextTaskT[tPre1] = t2;
+            if (special) {
+                nextTaskV[vi] = t2;
+            } else {
+                nextTaskT[tPre1] = t2;
+            }
             nextTaskT[t2] = t1;
             nextTaskT[t1] = tPost2;
         } else {
-            nextTaskT[tPre1] = t2;
+            if (special) {
+                nextTaskV[vi] = t2;
+            } else {
+                nextTaskT[tPre1] = t2;
+            }
             nextTaskT[tPre2] = t1;
             nextTaskT[t2] = tPost1;
             nextTaskT[t1] = tPost2;
         }
         updateTime(vi);
+    }
+
+    public boolean validChange(int tIdX1, int tIdX2) {
+        if (TaskStep.isPickup(tIdX1)) {
+            int deliver = TaskStep.getDeliveryId(tIdX1);
+            int next = tIdX1;
+            while (next != tIdX2) {
+                if (next == deliver) {
+                    return false;
+                }
+                next = nextTaskT[next];
+            }
+        }
+        if (!TaskStep.isPickup(tIdX2)) {
+            int pickup = TaskStep.getPickupId(tIdX2);
+            int next = tIdX1;
+            while (next != tIdX2) {
+                if (next == pickup) {
+                    return false;
+                }
+                next = nextTaskT[next];
+            }
+        }
+        return true;
     }
 
 

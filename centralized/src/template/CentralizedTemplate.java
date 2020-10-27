@@ -72,9 +72,22 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
         CPMaker pm = new CPMaker();
 
-        VariableSet newA = pm.changingTaskOrder(set, 0, 1, 2);
+        
+        // VariableSet newA = pm.changingTaskOrder(set, 0, 1, 3);
+        TaskStep pick0 = new TaskStep(null, 0, true);
+        TaskStep deliv0 = new TaskStep(null, 0, false);
+        TaskStep pick1 = new TaskStep(null, 1, true);
+        TaskStep deliv1 = new TaskStep(null, 1, false);
+        TaskStep pick3 = new TaskStep(null, 3, true);
+        TaskStep deliv3 = new TaskStep(null, 3, false);
 
-        System.out.println(newA);
+        System.out.println(pick0 + "" + pick1 +  set.validChange(pick0.getMapId(),pick1.getMapId()));
+        System.out.println(pick0 + "" + deliv1 +  set.validChange(pick0.getMapId(),deliv1.getMapId()));
+        System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
+        System.out.println(deliv0 + "" + pick3 +  set.validChange(deliv0.getMapId(),pick3.getMapId()));
+        System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
+
+        // System.out.println(set);
 
         return null;
 

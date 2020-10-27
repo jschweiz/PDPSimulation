@@ -62,8 +62,10 @@ public class CPMaker {
         if (lenght >= 2) {
             for (int tIdX1 = 1; tIdX1 < lenght - 1; tIdX1++) {
                 for (int tIdX2 = tIdX1 + 1; tIdX2 < lenght; tIdX2++) {
-                    VariableSet A = changingTaskOrder(A_old, vi, tIdX1, tIdX2);
-                    N.add(A);
+                    if (A_old.validChange(tIdX1, tIdX2)) {
+                        VariableSet A = changingTaskOrder(A_old, vi, tIdX1, tIdX2);
+                        N.add(A);
+                    }
                 }
             }
         }
