@@ -59,5 +59,13 @@ public class TaskStep {
     public String toString() {
         return "(task:" + id + ";" + (isPickup?"PICK":"DELIV") + ")";
     }
+
+    public static int getWeight(int t) {
+        TaskStep task = fromId(t);
+        if (task.isPickup) {
+            return task.t.weight;
+        }
+        return -task.t.weight;
+    }
     
 }

@@ -13,7 +13,7 @@
 	<agents import="centralized/config/agents.xml" />
 	
 	<!-- define task distribution -->
-	<tasks number="5" rngSeed="12345">
+	<tasks number="2" rngSeed="12345">
 		<!--
 			the probabilities, rewards and weight of tasks
 		-->
@@ -32,7 +32,7 @@
 				<set color="#0000ff" />
 				<set home="Newcastle" />
 				<set speed="90" />
-				<set capacity="30" />
+				<set capacity="6" />
 				<set cost-per-km="5" />
 			</vehicle>
 			
@@ -41,7 +41,7 @@
 				<set color="#ff0000" />
 				<set home="Cardiff" />
 				<set speed="90" />
-				<set capacity="30" />
+				<set capacity="6" />
 				<set cost-per-km="5" />
 			</vehicle>
 			

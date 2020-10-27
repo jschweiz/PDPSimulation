@@ -3,6 +3,7 @@ package template;
 import logist.simulation.Vehicle;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,19 +28,41 @@ public class VariableSet {
     // construct initial variable 
     public VariableSet(List<Vehicle> vehicles, TaskSet tasks) {
 
-        int numTasks = tasks.size();
+        ///////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////
+        Task t1 = new Task(1, null, null, 10, 5);
+        Task t2 = new Task(2, null, null, 10, 2);
+        Task t3 = new Task(3, null, null, 10, 3);
+        Task t4 = new Task(3, null, null, 10, 3);
+        Task t5 = new Task(3, null, null, 10, 3);
+        LinkedList<Task> tt = new LinkedList<Task>();
+        tt.add(t1);
+        tt.add(t2);
+        tt.add(t3);
+        tt.add(t4);
+        tt.add(t5);
+        ///////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////
+
+        int numTasks = 5;//tasks.size();
         int numVehicles = vehicles.size();
 
         // initialize all variable arrays
         this.nextTaskV = new int[numVehicles];
         this.nextTaskT = new int[numTasks * 2];
         this.time = new int[numTasks * 2];
-        this.vehicle = new int[numTasks];
+        this.vehicle = new int[numTasks*2];
 
         // intialize all the task and tasksteps vairables
         TaskStep.NUM_TASKS = numTasks;
         List<Task> taskList = new LinkedList<Task>();
-        for (Task t: tasks) taskList.add(t);
+
+        ///////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////
+        for (Task t: tt/*tasks*/) taskList.add(t);
+         ///////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////
+
         TaskStep.TASK_LIST = taskList;
 
         // save the vehicle list
@@ -59,12 +82,13 @@ public class VariableSet {
             if (usedCapacity + t.weight <= currVehicle.capacity()) {
                 // add this task to the vehicle
 
-                // fill the vehicleMap 
-                vehicle[taskNum] = vehicleNumber; //.put(t, vehicle);
-
                 // create pickup and delivert taskSteps
                 TaskStep pickup = new TaskStep(t, taskNum, true);
                 TaskStep delivery = new TaskStep(t, taskNum, false);
+
+                // fill the vehicleMap 
+                vehicle[pickup.getMapId()] = vehicleNumber; //.put(t, vehicle);
+                vehicle[delivery.getMapId()] = vehicleNumber; //.put(t, vehicle);
 
                 // fill the timeMap
                 time[pickup.getMapId()] = stepsOfVehicle; // timeMap.put(pickup, stepsOfVehicle);
@@ -84,6 +108,7 @@ public class VariableSet {
                 }
 
             } else {
+                if (t.weight > currVehicle.capacity()) throw new UnknownError();
                 // change vehicle 
                 vehicleNumber++;
                 usedCapacity = 0;
@@ -130,9 +155,7 @@ public class VariableSet {
         int length = 0;
         do {
             t = nextTaskT[t]; // this.taskStepNextTaskMap.get(t);
-            if (TaskStep.isPickup(t)) {
-                length++;
-            }
+            length++;
         } while (t != NULL);
         return length;
     }
@@ -150,10 +173,16 @@ public class VariableSet {
         updateTime(v1);
         updateTime(v2);
         vehicle[pickup] = v2;
+        vehicle[delivery] = v2;
     }
 
     // TO DO: VERIFY THAT WE DONT EXCHANGE PICKUP AND DELIVERY OF SAME TASK
     public void changingTaskOrder(int vi, int tIdX1, int tIdX2) {
+        // System.out.println("System is currently inverting" + tIdX1 + " and "+ tIdX2);
+        // we are using different index origin (0 instead of 1 like pseudocode)
+        tIdX1++;
+        tIdX2++;
+
         int tPre1 = NULL;
         int t1 = nextTaskV[vi];
         int count = 1;
@@ -197,27 +226,76 @@ public class VariableSet {
         updateTime(vi);
     }
 
-    public boolean validChange(int tIdX1, int tIdX2) {
-        if (TaskStep.isPickup(tIdX1)) {
-            int deliver = TaskStep.getDeliveryId(tIdX1);
-            int next = tIdX1;
-            while (next != tIdX2) {
-                if (next == deliver) {
-                    return false;
-                }
-                next = nextTaskT[next];
-            }
+    public int getVehicleCapacityAt(int v, int t0) {
+        int t = nextTaskV[v];
+        int currWeight = 0;//TaskStep.getWeight(t);
+        while (t != t0) {
+            currWeight += TaskStep.getWeight(t);
+            t = nextTaskT[t];
         }
-        if (!TaskStep.isPickup(tIdX2)) {
-            int pickup = TaskStep.getPickupId(tIdX2);
-            int next = tIdX1;
-            while (next != tIdX2) {
-                if (next == pickup) {
-                    return false;
-                }
-                next = nextTaskT[next];
-            }
+        return currWeight;
+    }
+
+    public boolean validChange(int tIdX1, int tIdX2, int v) {
+        int counter = 0;
+        int t = nextTaskV[v];
+        while (counter < tIdX1) {
+            t = nextTaskT[t];
+            counter++;
         }
+        int val1 = t;
+        while (counter < tIdX2) {
+            t = nextTaskT[t];
+            counter++;
+        }
+        int val2 = t;
+        tIdX1 = val1;
+        tIdX2 = val2;
+
+
+        // carefull if they are inversed: next processing only works if tIdX1 is before tIdX2
+        int time1 = time[tIdX1];
+        int time2 = time[tIdX2];
+        if (time1>time2) {
+            int tid = tIdX1;
+            tIdX1 = tIdX2;
+            tIdX2 = tid;
+        }
+
+
+        // find deliver or pickup of tasks
+        int deliverOfT1 = TaskStep.isPickup(tIdX1) ? TaskStep.getDeliveryId(tIdX1) : NULL;
+        int pickupOfT2 = !TaskStep.isPickup(tIdX2) ? TaskStep.getPickupId(tIdX2) : NULL;
+
+
+        int vehicleCapacity = vehicleList.get(v).capacity();
+
+        
+        // System.out.println("VALID ?" + TaskStep.fromId(tIdX1)+ " and " + TaskStep.fromId(tIdX2) + " (capacity:" + vehicleCapacity + ')');
+
+        int next = tIdX1;
+        int currentCapacity = getVehicleCapacityAt(v, tIdX1) + TaskStep.getWeight(tIdX2);
+
+        // System.out.println("Capacity after taking " + TaskStep.fromId(tIdX2) + " is " + currentCapacity + "(vehicleis:" + getVehicleCapacityAt(v, tIdX1)+")");
+
+        while (next != tIdX2) {
+
+            if (deliverOfT1 != NULL && next == deliverOfT1) return false;
+            if (pickupOfT2 != NULL && next == pickupOfT2) return false;
+            
+            if (currentCapacity > vehicleCapacity) return false;
+
+            next = nextTaskT[next];
+            currentCapacity += TaskStep.getWeight(next);
+
+            // System.out.println("Capacity after taking " + TaskStep.fromId(next) + " is " + currentCapacity);
+        }
+
+        // final check for capacity
+        currentCapacity +=  -TaskStep.getWeight(tIdX2) + TaskStep.getWeight(tIdX1);
+        // System.out.println("Capacity before tasking " + TaskStep.fromId(tIdX1) + " is " + currentCapacity + "\n\n");
+        if (currentCapacity > vehicleCapacity) return false;
+
         return true;
     }
 
@@ -252,15 +330,15 @@ public class VariableSet {
         int ti = nextTaskV[vi];
         if (ti != NULL) {
             time[ti] = 1;
+            int tj;
+            do {
+               tj = nextTaskT[ti];
+                if (tj != NULL) {
+                    time[tj] = time[ti] + 1;
+                    ti = tj;
+                }
+            } while (tj != NULL);
         }
-        int tj;
-        do {
-            tj = nextTaskT[ti];
-            if (tj != NULL) {
-                time[tj] = time[ti] + 1;
-                ti = tj;
-            }
-        } while (tj != NULL);
     }
 
 
@@ -282,6 +360,22 @@ public class VariableSet {
     public String toString() {
         String delim = "===========================================================================\n";
         String s = delim;
+        s += "VEHICLE CHAINS:\n";
+        for (int v = 0; v < vehicleList.size(); v++) {
+            s+= "   --- vehicle number" + v+ ":  ";
+            int t = nextTaskV[v];
+            while (t != NULL) {
+                s+= TaskStep.fromId(t) + " --> ";
+                t = nextTaskT[t];
+            }
+            s+= "NULL \n";
+        }
+        return s + delim;
+    }
+
+    public String toStringDetails() {
+        String delim = "===========================================================================\n";
+        String s = delim;
         s += "NEXT TASK TASKSTEP:\n";
         for (int i = 0; i < nextTaskT.length; i++) {
             s+= TaskStep.fromId(i) + " -> " + TaskStep.fromId(nextTaskT[i]) + "\n";
@@ -296,7 +390,37 @@ public class VariableSet {
         }
         s += "VEHICLE:\n";
         for (int i = 0; i < vehicle.length; i++) {
-            s+= i + " -> " + vehicle[i] + "\n";
+            s+= TaskStep.fromId(i) + " -> " + vehicle[i] + "\n";
+        }
+        return s + delim;
+    }
+
+    public String compare(VariableSet c) {
+        String delim = "==============================COMPARISON====================================\n";
+        String s = delim;
+        s += "NEXT TASK TASKSTEP:\n";
+        for (int i = 0; i < nextTaskT.length; i++) {
+            if (nextTaskT[i] != c.nextTaskT[i]) {
+                s+= TaskStep.fromId(i) + ":::  " +  TaskStep.fromId(nextTaskT[i]) + " -> " + TaskStep.fromId(c.nextTaskT[i]) + "\n";
+            }
+        }
+        s += "NEXT TASK VEHICLE:\n";
+        for (int i = 0; i < nextTaskV.length; i++) {
+            if (nextTaskV[i] != c.nextTaskV[i]) {
+                s+= i + ":::  " +  TaskStep.fromId(nextTaskV[i]) + " -> " + TaskStep.fromId(c.nextTaskV[i]) + "\n";
+            }
+        }
+        // s += "TIME :\n";
+        // for (int i = 0; i < time.length; i++) {
+        //     if (time[i] != c.time[i]) {
+        //         s+= TaskStep.fromId(i) + ":::  " +  time[i] + " -> " + c.time[i] + "\n";
+        //     }
+        // }
+        s += "VEHICLE:\n";
+        for (int i = 0; i < vehicle.length; i++) {
+            if (vehicle[i] != c.vehicle[i]) {
+                s+= TaskStep.fromId(i) + ":::  " +  vehicle[i] + " -> " + c.vehicle[i] + "\n";
+            }
         }
         return s + delim;
     }
@@ -304,3 +428,33 @@ public class VariableSet {
 
     
 }
+
+
+
+
+        // if () {
+        //     int deliver = ;
+            
+        //     // System.out.println("tIdX1 is pickup with delivery" + deliver);
+        //     int next = tIdX1;
+        //     while (next != tIdX2) {
+        //         if (next == deliver) {
+        //             // System.out.println("return false because of tix1");
+        //             return false;
+        //         }
+        //         next = nextTaskT[next];
+        //     }
+        // }
+        // if (!TaskStep.isPickup(tIdX2)) {
+        //     int pickup = TaskStep.getPickupId(tIdX2);
+        //     int next = tIdX1;
+        //     while (next != tIdX2) {
+        //         if (next == pickup) {
+        //             // System.out.println("return false because of tix2");
+        //             return false;
+        //         }
+        //         next = nextTaskT[next];
+        //     }
+        // }
+
+        // check if vehicle has enough capacity for it

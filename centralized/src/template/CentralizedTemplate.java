@@ -5,6 +5,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 import logist.LogistSettings;
 
 import logist.Measures;
@@ -67,25 +69,43 @@ public class CentralizedTemplate implements CentralizedBehavior {
         // test
 
         System.out.println("Testing VariableSet structure");
-        VariableSet set = new VariableSet(vehicles, tasks);
-        System.out.println(set);
+        VariableSet A = new VariableSet(vehicles, tasks);
+        // System.out.println(A);
 
         CPMaker pm = new CPMaker();
 
+        System.out.println(pm.runSLS(vehicles, tasks));
+
+        // VariableSet abis = pm.changingVehicle(A,0,1);
+
+        // System.out.println(A.compare(A));
+
+        // System.out.println("There is " + N.size() + " possible new states");
+
+        // System.out.println(del + ":" + del.getMapId() + "     -----    " + pic);
+
+        // System.out.println("=================>" + A.validChange(del.getMapId(), pic.getMapId()));
+
+        // for (VariableSet v : N) {
+        //     System.out.println(v);
+        // }
+
         
         // VariableSet newA = pm.changingTaskOrder(set, 0, 1, 3);
-        TaskStep pick0 = new TaskStep(null, 0, true);
-        TaskStep deliv0 = new TaskStep(null, 0, false);
-        TaskStep pick1 = new TaskStep(null, 1, true);
-        TaskStep deliv1 = new TaskStep(null, 1, false);
-        TaskStep pick3 = new TaskStep(null, 3, true);
-        TaskStep deliv3 = new TaskStep(null, 3, false);
+        // TaskStep pick0 = new TaskStep(null, 0, true);
+        // TaskStep deliv0 = new TaskStep(null, 0, false);
+        // TaskStep pick1 = new TaskStep(null, 1, true);
+        // TaskStep deliv1 = new TaskStep(null, 1, false);
+        // TaskStep pick3 = new TaskStep(null, 3, true);
+        // TaskStep deliv3 = new TaskStep(null, 3, false);
 
-        System.out.println(pick0 + "" + pick1 +  set.validChange(pick0.getMapId(),pick1.getMapId()));
-        System.out.println(pick0 + "" + deliv1 +  set.validChange(pick0.getMapId(),deliv1.getMapId()));
-        System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
-        System.out.println(deliv0 + "" + pick3 +  set.validChange(deliv0.getMapId(),pick3.getMapId()));
-        System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
+        // System.out.println(pick0 + "" + pick1 +  set.validChange(pick0.getMapId(),pick1.getMapId()));
+        // System.out.println(pick0 + "" + deliv1 +  set.validChange(pick0.getMapId(),deliv1.getMapId()));
+        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
+        // System.out.println(deliv0 + "" + pick3 +  set.validChange(deliv0.getMapId(),pick3.getMapId()));
+        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
+        // set.changingTaskOrder(0, deliv0.getMapId(), pick3.getMapId());
+        // System.out.println(set);
 
         // System.out.println(set);
 
