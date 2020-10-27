@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<history configuration="deliberative\config\deliberative.xml">
+<history configuration="centralized\config\centralized_simplified.xml">
 	<agents>
-		<agent name="deliberative-bfs">
+		<agent name="centralized-random">
 			<vehicle name="Vehicle 1"/>
+			<vehicle name="Vehicle 2"/>

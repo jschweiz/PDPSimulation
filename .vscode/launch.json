@@ -11,12 +11,19 @@
         //     "mainClass": "logist.LogistPlatform",
         //     "args": "config/reactive_compet.xml reactive-random reactive-dummy reactive-rla"
         // },
+        // {
+        //     "type": "java",
+        //     "name": "deliberative",
+        //     "request": "launch",
+        //     "mainClass": "logist.LogistPlatform",
+        //     "args": "deliberative/config/deliberative.xml deliberative-astar"
+        // },
         {
             "type": "java",
-            "name": "deliberative",
+            "name": "centralized",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "deliberative/config/deliberative.xml deliberative-bfs deliberative-random"
+            "args": "centralized/config/centralized_simplified.xml centralized-random"
         }
     ]
 }
