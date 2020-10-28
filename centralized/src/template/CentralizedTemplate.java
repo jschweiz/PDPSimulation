@@ -3,6 +3,7 @@ package template;
 import java.io.File;
 //the list of imports
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -65,16 +66,24 @@ public class CentralizedTemplate implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
 
+        ///////////////////////////////////////////////////////
+        ///////////////TESTING ON EXACT SET////////////////////
+        ///////////////////////////////////////////////////////
+        int[] weights = {5,2,3,3,3};
+        List<Task> tasksList = new LinkedList<Task>();
+        for (int w = 0; w < weights.length; w++) {
+            tasksList.add(new Task(w, null, null, 10, weights[w]));
+        }
+        ///////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////
         
-        // test
 
         System.out.println("Testing VariableSet structure");
-        VariableSet A = new VariableSet(vehicles, tasks);
-        // System.out.println(A);
 
         CPMaker pm = new CPMaker();
+        VariableSet finalState = pm.runSLS(vehicles, tasksList);
 
-        System.out.println(pm.runSLS(vehicles, tasks));
+        System.out.println(finalState);
 
         // VariableSet abis = pm.changingVehicle(A,0,1);
 

@@ -2,20 +2,15 @@ package template;
 
 import logist.simulation.Vehicle;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import logist.task.Task;
-import logist.task.TaskSet;
 
 public class VariableSet {
 
-    public static int NULL = -1;
+    private static int NULL = -1;
+    private static List<Vehicle> vehicleList;
 
     private int[] nextTaskV;
     private int[] nextTaskT;
@@ -23,28 +18,13 @@ public class VariableSet {
     private int[] time;
     private int[] vehicle;
 
-    private static List<Vehicle> vehicleList;
 
-    // construct initial variable 
-    public VariableSet(List<Vehicle> vehicles, TaskSet tasks) {
 
-        ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
-        Task t1 = new Task(1, null, null, 10, 5);
-        Task t2 = new Task(2, null, null, 10, 2);
-        Task t3 = new Task(3, null, null, 10, 3);
-        Task t4 = new Task(3, null, null, 10, 3);
-        Task t5 = new Task(3, null, null, 10, 3);
-        LinkedList<Task> tt = new LinkedList<Task>();
-        tt.add(t1);
-        tt.add(t2);
-        tt.add(t3);
-        tt.add(t4);
-        tt.add(t5);
-        ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
+    // construct initial variable
 
-        int numTasks = 5;//tasks.size();
+    public VariableSet(List<Vehicle> vehicles, List<Task> tasks) {
+
+        int numTasks = tasks.size();
         int numVehicles = vehicles.size();
 
         // initialize all variable arrays
@@ -53,17 +33,9 @@ public class VariableSet {
         this.time = new int[numTasks * 2];
         this.vehicle = new int[numTasks*2];
 
-        // intialize all the task and tasksteps vairables
+        // intialize all the task and tasksteps variables
         TaskStep.NUM_TASKS = numTasks;
-        List<Task> taskList = new LinkedList<Task>();
-
-        ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
-        for (Task t: tt/*tasks*/) taskList.add(t);
-         ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
-
-        TaskStep.TASK_LIST = taskList;
+        TaskStep.TASK_LIST = tasks;
 
         // save the vehicle list
         vehicleList = vehicles;
@@ -77,7 +49,7 @@ public class VariableSet {
 
         for (int taskNum = 0; taskNum < numTasks; taskNum++) {
 
-            Task t = taskList.get(taskNum);
+            Task t = tasks.get(taskNum);
 
             if (usedCapacity + t.weight <= currVehicle.capacity()) {
                 // add this task to the vehicle
@@ -87,23 +59,23 @@ public class VariableSet {
                 TaskStep delivery = new TaskStep(t, taskNum, false);
 
                 // fill the vehicleMap 
-                vehicle[pickup.getMapId()] = vehicleNumber; //.put(t, vehicle);
-                vehicle[delivery.getMapId()] = vehicleNumber; //.put(t, vehicle);
+                vehicle[pickup.getMapId()] = vehicleNumber;
+                vehicle[delivery.getMapId()] = vehicleNumber;
 
                 // fill the timeMap
-                time[pickup.getMapId()] = stepsOfVehicle; // timeMap.put(pickup, stepsOfVehicle);
+                time[pickup.getMapId()] = stepsOfVehicle;
                 stepsOfVehicle++;
-                time[delivery.getMapId()] = stepsOfVehicle; // timeMap.put(delivery, stepsOfVehicle);
+                time[delivery.getMapId()] = stepsOfVehicle;
                 stepsOfVehicle++;
 
                 // if first task of vehicle
                 if (stepsOfVehicle == 3) {
-                    nextTaskV[vehicleNumber] = pickup.getMapId(); // vehicleNextTaskMap.put(vehicle.id(), pickup);
-                    nextTaskT[pickup.getMapId()] = delivery.getMapId(); // taskStepNextTaskMap.put(pickup, delivery);
+                    nextTaskV[vehicleNumber] = pickup.getMapId();
+                    nextTaskT[pickup.getMapId()] = delivery.getMapId();
                     prevAction = delivery;
                 } else {
-                    nextTaskT[prevAction.getMapId()] = pickup.getMapId(); // taskStepNextTaskMap.put(prevAction, pickup);
-                    nextTaskT[pickup.getMapId()] = delivery.getMapId(); //taskStepNextTaskMap.put(pickup, delivery);
+                    nextTaskT[prevAction.getMapId()] = pickup.getMapId();
+                    nextTaskT[pickup.getMapId()] = delivery.getMapId();
                     prevAction = delivery;
                 }
 
@@ -117,16 +89,16 @@ public class VariableSet {
             }
         }
 
-
-        nextTaskT[prevAction.getMapId()] = NULL; // taskStepNextTaskMap.put(prevAction, null);
+        nextTaskT[prevAction.getMapId()] = NULL;
 
         for (int i = vehicleNumber + 1; i < numVehicles; i++) {
             // fill vehicles with no tasks
-            nextTaskV[i] = NULL; // vehicleNextTaskMap.put(vehicles.get(i).id(), null);
+            nextTaskV[i] = NULL;
         }
     }
 
 
+    // helper functions for CPMaker
 
     public int getRandomAppropriateVehicle() {
         int n = getNumberVehicles();
@@ -142,11 +114,11 @@ public class VariableSet {
         return vehicleList.size();
     }
 
-    public TaskStep getTaskSetOfVehicle(int v) {
+    public TaskStep getFirstStepOf(int v) {
         return TaskStep.fromId(nextTaskV[v]);
     }
 
-    public int getCapacityVehicle(int vi) {
+    public int getVehicleCapacity(int vi) {
         return vehicleList.get(vi).capacity();
     }
 
@@ -154,7 +126,7 @@ public class VariableSet {
         int t = nextTaskV[v];
         int length = 0;
         do {
-            t = nextTaskT[t]; // this.taskStepNextTaskMap.get(t);
+            t = nextTaskT[t];
             length++;
         } while (t != NULL);
         return length;
@@ -176,7 +148,6 @@ public class VariableSet {
         vehicle[delivery] = v2;
     }
 
-    // TO DO: VERIFY THAT WE DONT EXCHANGE PICKUP AND DELIVERY OF SAME TASK
     public void changingTaskOrder(int vi, int tIdX1, int tIdX2) {
         // System.out.println("System is currently inverting" + tIdX1 + " and "+ tIdX2);
         // we are using different index origin (0 instead of 1 like pseudocode)
@@ -226,6 +197,9 @@ public class VariableSet {
         updateTime(vi);
     }
 
+
+    // OTHER CHANGING FUNCTION HELPERS
+
     public int getVehicleCapacityAt(int v, int t0) {
         int t = nextTaskV[v];
         int currWeight = 0;//TaskStep.getWeight(t);
@@ -262,21 +236,13 @@ public class VariableSet {
             tIdX2 = tid;
         }
 
-
         // find deliver or pickup of tasks
         int deliverOfT1 = TaskStep.isPickup(tIdX1) ? TaskStep.getDeliveryId(tIdX1) : NULL;
         int pickupOfT2 = !TaskStep.isPickup(tIdX2) ? TaskStep.getPickupId(tIdX2) : NULL;
 
-
-        int vehicleCapacity = vehicleList.get(v).capacity();
-
-        
-        // System.out.println("VALID ?" + TaskStep.fromId(tIdX1)+ " and " + TaskStep.fromId(tIdX2) + " (capacity:" + vehicleCapacity + ')');
-
+        int vehicleCapacity = getVehicleCapacity(v);
         int next = tIdX1;
         int currentCapacity = getVehicleCapacityAt(v, tIdX1) + TaskStep.getWeight(tIdX2);
-
-        // System.out.println("Capacity after taking " + TaskStep.fromId(tIdX2) + " is " + currentCapacity + "(vehicleis:" + getVehicleCapacityAt(v, tIdX1)+")");
 
         while (next != tIdX2) {
 
@@ -287,21 +253,14 @@ public class VariableSet {
 
             next = nextTaskT[next];
             currentCapacity += TaskStep.getWeight(next);
-
-            // System.out.println("Capacity after taking " + TaskStep.fromId(next) + " is " + currentCapacity);
         }
 
         // final check for capacity
         currentCapacity +=  -TaskStep.getWeight(tIdX2) + TaskStep.getWeight(tIdX1);
-        // System.out.println("Capacity before tasking " + TaskStep.fromId(tIdX1) + " is " + currentCapacity + "\n\n");
         if (currentCapacity > vehicleCapacity) return false;
 
         return true;
     }
-
-
-
-    // CHANGING HELPER FUNCTIONS
 
     public int removeTaskFromVehicle(int vi) {
         int pickup = nextTaskV[vi];
@@ -342,8 +301,8 @@ public class VariableSet {
     }
 
 
+    // CLONE FUNCTIONS
 
-    // clone functions
     public VariableSet(int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle) {
         this.nextTaskV = nextTaskV;
         this.nextTaskT = nextTaskT;
@@ -356,7 +315,7 @@ public class VariableSet {
     }
 
 
-    // utility functions
+    // TO STRING FUNCTIONS
     public String toString() {
         String delim = "===========================================================================\n";
         String s = delim;
@@ -410,12 +369,6 @@ public class VariableSet {
                 s+= i + ":::  " +  TaskStep.fromId(nextTaskV[i]) + " -> " + TaskStep.fromId(c.nextTaskV[i]) + "\n";
             }
         }
-        // s += "TIME :\n";
-        // for (int i = 0; i < time.length; i++) {
-        //     if (time[i] != c.time[i]) {
-        //         s+= TaskStep.fromId(i) + ":::  " +  time[i] + " -> " + c.time[i] + "\n";
-        //     }
-        // }
         s += "VEHICLE:\n";
         for (int i = 0; i < vehicle.length; i++) {
             if (vehicle[i] != c.vehicle[i]) {
@@ -424,37 +377,4 @@ public class VariableSet {
         }
         return s + delim;
     }
-
-
-    
 }
-
-
-
-
-        // if () {
-        //     int deliver = ;
-            
-        //     // System.out.println("tIdX1 is pickup with delivery" + deliver);
-        //     int next = tIdX1;
-        //     while (next != tIdX2) {
-        //         if (next == deliver) {
-        //             // System.out.println("return false because of tix1");
-        //             return false;
-        //         }
-        //         next = nextTaskT[next];
-        //     }
-        // }
-        // if (!TaskStep.isPickup(tIdX2)) {
-        //     int pickup = TaskStep.getPickupId(tIdX2);
-        //     int next = tIdX1;
-        //     while (next != tIdX2) {
-        //         if (next == pickup) {
-        //             // System.out.println("return false because of tix2");
-        //             return false;
-        //         }
-        //         next = nextTaskT[next];
-        //     }
-        // }
-
-        // check if vehicle has enough capacity for it
