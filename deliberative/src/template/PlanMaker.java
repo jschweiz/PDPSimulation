@@ -48,7 +48,8 @@ public class PlanMaker {
 			// if state is final (= all packets have been delivered)
 			if (state.allPacketsAreDelivered()) {
 				// System.out.println("Visited " + pathTo.size() + " states.");
-				System.out.println(pathToState + "cost: " + pathToState.getCost() + ":" + state.getCostToReach());
+
+				if(DEBUG) System.out.println(pathToState + "cost: " + pathToState.getCost() + ":" + state.getCostToReach());
 				allGoalPaths.add(pathToState);
 			}
 
