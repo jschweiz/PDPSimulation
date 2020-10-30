@@ -19,8 +19,8 @@ public class VariableSet {
     private int[] time;
     private int[] vehicle;
 
+    private double cost = -1;
 
-    
     // construct initial variable
 
     public VariableSet(List<Vehicle> vehicles, List<Task> tasks) {
@@ -44,7 +44,6 @@ public class VariableSet {
         // variables for init
         int vehicleNumber = 0;
         Vehicle currVehicle = vehicles.get(vehicleNumber);
-        int usedCapacity = 0;
         int stepsOfVehicle = 1;
         TaskStep prevAction = null;
 
@@ -65,9 +64,9 @@ public class VariableSet {
         for (int taskNum = 0; taskNum < numTasks; taskNum++) {
             Task t = tasks.get(taskNum);
 
-            if (usedCapacity + t.weight <= currVehicle.capacity()) {
-                usedCapacity += t.weight;
-
+            if (t.weight <= currVehicle.capacity()) {
+                // No worry of usedCapacity, as the task is added 
+                // As "Pickup and deliver immediately (one task at a time)"
                 // create pickup and deliver taskSteps
                 TaskStep pickup = new TaskStep(t, taskNum, true);
                 TaskStep delivery = new TaskStep(t, taskNum, false);
@@ -91,10 +90,9 @@ public class VariableSet {
                 prevAction = delivery;
 
             } else {
-                // change vehicle and reset usedCapacity
+                // change vehicle
                 vehicleNumber++;
                 currVehicle = vehicleList.get(vehicleNumber);
-                usedCapacity = 0;
                 stepsOfVehicle = 1;
 
                 // try again to put the same task in the next vehicle
