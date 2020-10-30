@@ -66,58 +66,21 @@ public class CentralizedTemplate implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
 
-        ///////////////////////////////////////////////////////
-        ///////////////TESTING ON EXACT SET////////////////////
-        ///////////////////////////////////////////////////////
-        int[] weights = {5,2,3,3,3};
-        List<Task> tasksList = new LinkedList<Task>();
-        for (int w = 0; w < weights.length; w++) {
-            tasksList.add(new Task(w, null, null, 10, weights[w]));
-        }
-        ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
-        
+        // convert TaskSet to List<Task> as used in the code structure
+        int nTasks = tasks.size();
+        List<Task> taskList = new ArrayList<Task>(nTasks);
+        for (Task t : tasks) 
+            taskList.add(t);
 
         System.out.println("Testing VariableSet structure");
 
         CPMaker pm = new CPMaker();
-        VariableSet finalState = pm.runSLS(vehicles, tasksList);
+        VariableSet finalState = pm.runSLS(vehicles, taskList);
+        long time_stop = System.currentTimeMillis();
+        System.out.println("Plan computed in : " + (time_stop- time_start)/1000 + " seconds");
 
         System.out.println(finalState);
-
-        // VariableSet abis = pm.changingVehicle(A,0,1);
-
-        // System.out.println(A.compare(A));
-
-        // System.out.println("There is " + N.size() + " possible new states");
-
-        // System.out.println(del + ":" + del.getMapId() + "     -----    " + pic);
-
-        // System.out.println("=================>" + A.validChange(del.getMapId(), pic.getMapId()));
-
-        // for (VariableSet v : N) {
-        //     System.out.println(v);
-        // }
-
         
-        // VariableSet newA = pm.changingTaskOrder(set, 0, 1, 3);
-        // TaskStep pick0 = new TaskStep(null, 0, true);
-        // TaskStep deliv0 = new TaskStep(null, 0, false);
-        // TaskStep pick1 = new TaskStep(null, 1, true);
-        // TaskStep deliv1 = new TaskStep(null, 1, false);
-        // TaskStep pick3 = new TaskStep(null, 3, true);
-        // TaskStep deliv3 = new TaskStep(null, 3, false);
-
-        // System.out.println(pick0 + "" + pick1 +  set.validChange(pick0.getMapId(),pick1.getMapId()));
-        // System.out.println(pick0 + "" + deliv1 +  set.validChange(pick0.getMapId(),deliv1.getMapId()));
-        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
-        // System.out.println(deliv0 + "" + pick3 +  set.validChange(deliv0.getMapId(),pick3.getMapId()));
-        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
-        // set.changingTaskOrder(0, deliv0.getMapId(), pick3.getMapId());
-        // System.out.println(set);
-
-        // System.out.println(set);
-
         return null;
 
 
