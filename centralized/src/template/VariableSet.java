@@ -2,6 +2,7 @@ package template;
 
 import logist.simulation.Vehicle;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -19,7 +20,7 @@ public class VariableSet {
     private int[] vehicle;
 
 
-
+    
     // construct initial variable
 
     public VariableSet(List<Vehicle> vehicles, List<Task> tasks) {
@@ -114,7 +115,7 @@ public class VariableSet {
     public int getRandomAppropriateVehicle() {
         int n = getNumberVehicles();
         int chosenVehicle = new Random().nextInt(n);
-        // POTENTIAL INFINITE LOOP BE CAREFULL
+        // Potential infinite loop --> expected to finish after n iterations
         while (this.nextTaskV[chosenVehicle] == NULL) {
             chosenVehicle = new Random().nextInt(n);
         }
@@ -324,7 +325,6 @@ public class VariableSet {
     }
 
     // COST FUNCTION
-
     public double getCost() {
         return 1;
     }
@@ -406,4 +406,33 @@ public class VariableSet {
         }
         return s + delim;
     }
+
+
+    // Hashcode and equals function, for use in HashSet
+
+    @Override
+    public int hashCode() {
+        // Arrays.hashCode(a) == Arrays.hashCode(b) if Arrays.equals(a, b)
+        return Arrays.hashCode(nextTaskV) + 29*Arrays.hashCode(nextTaskT) + 7*Arrays.hashCode(time) + 31*Arrays.hashCode(vehicle);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) 
+            return true;
+        if (o == null)
+            return false;
+        if (!(o instanceof VariableSet))
+            return false;
+        VariableSet other = (VariableSet)o;
+
+        if (!Arrays.equals(this.nextTaskV, other.nextTaskV)
+            || !Arrays.equals(this.nextTaskT, other.nextTaskT)
+            || !Arrays.equals(this.time, other.time)
+            || !Arrays.equals(this.vehicle, other.vehicle))
+            return false;
+
+        return true;
+    }
+
 }

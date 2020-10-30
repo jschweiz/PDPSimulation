@@ -63,9 +63,8 @@ public class CPMaker {
         // applying changing vehicle operator
         for (int vj = 0; vj < A_old.getNumberVehicles(); vj++) {
             if (vi == vj) continue;
-
+            
             TaskStep t = A_old.getFirstStepOf(vi);
-
             // possible to put the task in the vehicle (in front of all) 
             if ( t.t.weight < A_old.getVehicleCapacity(vj)) {
                 VariableSet A = changingVehicle(A_old, vi, vj);
