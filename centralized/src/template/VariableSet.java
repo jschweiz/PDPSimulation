@@ -323,6 +323,12 @@ public class VariableSet {
         // }
     }
 
+    // COST FUNCTION
+
+    public double getCost() {
+        return 1;
+    }
+
 
     // CLONE FUNCTIONS
 

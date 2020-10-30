@@ -9,8 +9,7 @@ import logist.simulation.Vehicle;
 import logist.task.Task;
 
 public class CPMaker {
-
-    private static double EXPLORATION_FACTOR = 0.5;
+    private static double P = 0.4;
     private static int COUNTER = 0;
     private static int ITERATIONS = 30;
     private static boolean COUTING_ITERATIONS = true;
@@ -107,24 +106,36 @@ public class CPMaker {
     }
 
 
-    // TO DO : thinking required 
     public VariableSet localChoice(Set<VariableSet> N, VariableSet A_old) {
+        // return A with probability p
+        if (new Random().nextDouble() < CPMaker.P) 
+            return findBest(N);
+        else    
+            return A_old;
+    }
 
-        // select best A among the N
-        int n = N.size();
-        int rand = new Random().nextInt(n);
-        
 
-        // return A with probability p (exploration factor)
-        // return (Math.random() < EXPLORATION_FACTOR? A: A_old);
-        int count = 0;
-        for (VariableSet v : N) {
-            if (count == rand) {
-                return v;
+    public VariableSet findBest(Set<VariableSet> N) {
+        boolean first = true;
+        double minValue = -1;
+        VariableSet minArg = null;
+
+        for (VariableSet vs : N) {
+            double cost = vs.getCost();
+
+            // initialize minValue and minArg
+            if (first) {    
+                minValue = cost;
+                minArg = vs;
+                first = false;
             }
-            count++;
+
+            if (cost < minValue) {
+                minValue = cost;
+                minArg = vs;
+            }
         }
-        return null;
+        return minArg;
     }
     
 }

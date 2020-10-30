@@ -2,7 +2,7 @@
 - [x] Correct construction of initial solution
   - [x] Avoid forgetting task 
   - [x] Avoid raising unfounded exception
-- [ ] Write cost function / try an efficient way to calculate this
-- [ ] Write choice function `localChoice()` to choose best transformation with probabilty p
+- [ ] Write `computeCost(à` / try an efficient way to calculate this
+- [x] Write choice function `localChoice()` to choose best transformation with probabilty p
 - [ ] Write `conditionIsMet()`
 - [ ] Revise call of `changingVehicle()` for something cleverer ? 
