@@ -74,8 +74,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
         System.out.println("Testing VariableSet structure");
 
-        CPMaker pm = new CPMaker();
-        VariableSet finalState = pm.runSLS(vehicles, taskList);
+        CPMaker.setParameters(0.5, 30, 10000);
+        VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
         long time_stop = System.currentTimeMillis();
         System.out.println("Plan computed in : " + (time_stop- time_start)/1000 + " seconds");
 

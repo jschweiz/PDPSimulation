@@ -10,54 +10,65 @@ import logist.task.Task;
 
 public class CPMaker {
     private static double P = 0.4;
-    private static int COUNTER = 0;
-    private static int ITERATIONS = 30;
-    private static boolean COUTING_ITERATIONS = true;
+    private static int MAX_ITERATIONS = 30;
+    private static int MAX_TIME_SEC = 30;
 
-    // DONE
-    public VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks) {
+    private static long startTimeMillis;
+    private static int COUNTER = 0;
+    
+    public static void setParameters(double p, int maxIter, int maxTimeSec) {
+        if (p >= 0)
+            P = p;
+        if (maxIter > 0)
+            MAX_ITERATIONS = maxIter;
+        if (maxTimeSec > 0)
+            MAX_TIME_SEC = maxTimeSec;
+
+        String summary = String.format("Run with \t p = %d \t MAX_ITER = %d \t MAX_TIME = %d", P, MAX_ITERATIONS, MAX_TIME_SEC);
+        System.out.println(summary);
+            
+    }
+
+    public static VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks) {
         VariableSet A = selectInitialSolution(vehicles, tasks);
         VariableSet A_old = null;
-        int counter = 0;
+        COUNTER = 0;
+        startTimeMillis = System.currentTimeMillis();
         do {
             A_old = A;
             System.out.println("\n\n\n\n***********************************************************************************************");
-            System.out.println("************************************ITERATION "+counter +"******************************************");
+            System.out.println("************************************ITERATION "+ COUNTER +" ******************************************");
             System.out.println("***********************************************************************************************");
             System.out.println(A_old);
             Set<VariableSet> N = chooseNeightbours(A_old);
             A = localChoice(N, A_old);
             // System.out.println(A_old.compare(A));
-            counter++;
+            COUNTER++;
         } while (!conditionIsMet(A, A_old));
         return A;
     }
 
-    // DONE
-    public VariableSet selectInitialSolution(List<Vehicle> vehicles,  List<Task> tasks) {
+    public static VariableSet selectInitialSolution(List<Vehicle> vehicles,  List<Task> tasks) {
         // create a basic environment of variables by giving all tasks to a vehicle
         return new VariableSet(vehicles, tasks);
     }
 
-    // TO COMPLETE
-    public boolean conditionIsMet(VariableSet A, VariableSet A_old) {
-        if (COUTING_ITERATIONS) {
-            if (COUNTER > ITERATIONS) {
-                return true;
-            }
-            COUNTER++;
-            return false;
-        } else {
-            // compute something else
-            return false;
-        }
+    public static boolean conditionIsMet(VariableSet A, VariableSet A_old) {
+        // Condition on number of iterations
+        if (COUNTER > MAX_ITERATIONS)
+            return true;
+
+        // Condition on time
+        long currentTimeMillis = System.currentTimeMillis();
+        long elapsedTimeSec = (currentTimeMillis - startTimeMillis) / 1000;
+        if (elapsedTimeSec > MAX_TIME_SEC) 
+            return true;
+
+        return false;
     }
 
-    // DONE
-    public Set<VariableSet> chooseNeightbours(VariableSet A_old) {
-
+    public static Set<VariableSet> chooseNeightbours(VariableSet A_old) {
         Set<VariableSet> N = new HashSet<VariableSet>();
-
         int vi = A_old.getRandomAppropriateVehicle();
 
         // applying changing vehicle operator
@@ -90,7 +101,7 @@ public class CPMaker {
 
 
     // DONE
-    public VariableSet changingTaskOrder(VariableSet A, int vi, int tIdX1, int tIdX2) {
+    public static VariableSet changingTaskOrder(VariableSet A, int vi, int tIdX1, int tIdX2) {
         VariableSet A1 = A.copy();
         A1.changingTaskOrder(vi, tIdX1, tIdX2);
         return A1;
@@ -98,14 +109,14 @@ public class CPMaker {
     
 
     // DONE
-    public VariableSet changingVehicle(VariableSet A, int vi, int vj) {
+    public static VariableSet changingVehicle(VariableSet A, int vi, int vj) {
         VariableSet A1 = A.copy();
         A1.changingVehicle(vi, vj);
         return A1;
     }
 
 
-    public VariableSet localChoice(Set<VariableSet> N, VariableSet A_old) {
+    public static VariableSet localChoice(Set<VariableSet> N, VariableSet A_old) {
         // return A with probability p
         if (new Random().nextDouble() < CPMaker.P) 
             return findBest(N);
@@ -114,7 +125,7 @@ public class CPMaker {
     }
 
 
-    public VariableSet findBest(Set<VariableSet> N) {
+    public static VariableSet findBest(Set<VariableSet> N) {
         boolean first = true;
         double minValue = -1;
         VariableSet minArg = null;
