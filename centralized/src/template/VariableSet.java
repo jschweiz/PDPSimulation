@@ -47,14 +47,27 @@ public class VariableSet {
         int stepsOfVehicle = 1;
         TaskStep prevAction = null;
 
-        for (int taskNum = 0; taskNum < numTasks; taskNum++) {
+        // Basic check : is there a task that cannot fit in any vehicle ? 
+        for (Task t : tasks) {
+            boolean ok = false;
+            for (Vehicle v : vehicles) {
+                if (t.weight < v.capacity())
+                    ok = true;
+            }
+            if (!ok){
+                System.err.println("Tast " + t + " does not fit in any vehicle");
+                return;
+            }
+        }
 
+        // Task to vehicle assignement
+        for (int taskNum = 0; taskNum < numTasks; taskNum++) {
             Task t = tasks.get(taskNum);
 
             if (usedCapacity + t.weight <= currVehicle.capacity()) {
-                // add this task to the vehicle
+                usedCapacity += t.weight;
 
-                // create pickup and delivert taskSteps
+                // create pickup and deliver taskSteps
                 TaskStep pickup = new TaskStep(t, taskNum, true);
                 TaskStep delivery = new TaskStep(t, taskNum, false);
 
@@ -69,30 +82,28 @@ public class VariableSet {
                 stepsOfVehicle++;
 
                 // if first task of vehicle
-                if (stepsOfVehicle == 3) {
+                if (stepsOfVehicle == 3) 
                     nextTaskV[vehicleNumber] = pickup.getMapId();
-                    nextTaskT[pickup.getMapId()] = delivery.getMapId();
-                    prevAction = delivery;
-                } else {
+                else 
                     nextTaskT[prevAction.getMapId()] = pickup.getMapId();
-                    nextTaskT[pickup.getMapId()] = delivery.getMapId();
-                    prevAction = delivery;
-                }
+                nextTaskT[pickup.getMapId()] = delivery.getMapId();
+                prevAction = delivery;
 
             } else {
-                if (t.weight > currVehicle.capacity()) throw new UnknownError();
-                // change vehicle 
+                // change vehicle and reset usedCapacity
                 vehicleNumber++;
+                currVehicle = vehicleList.get(vehicleNumber);
                 usedCapacity = 0;
                 stepsOfVehicle = 1;
-                currVehicle = vehicleList.get(vehicleNumber);
+
+                // try again to put the same task in the next vehicle
+                taskNum--;
             }
         }
-
         nextTaskT[prevAction.getMapId()] = NULL;
 
+        // fill unused vehicles with no tasks
         for (int i = vehicleNumber + 1; i < numVehicles; i++) {
-            // fill vehicles with no tasks
             nextTaskV[i] = NULL;
         }
     }
@@ -138,7 +149,7 @@ public class VariableSet {
     public void changingVehicle(int v1, int v2) {
         // take first task pickup of vehicle
         int pickup = nextTaskV[v1];
-        int delivery = removeTaskFromVehicle(v1);
+        int delivery = removeFirstTaskFromVehicle(v1);
         nextTaskT[delivery] = nextTaskV[v2];
         nextTaskT[pickup] = delivery;
         nextTaskV[v2] = pickup;
@@ -211,6 +222,9 @@ public class VariableSet {
     }
 
     public boolean validChange(int tIdX1, int tIdX2, int v) {
+        if (tIdX1 > tIdX2)
+            return false;
+
         int counter = 0;
         int t = nextTaskV[v];
         while (counter < tIdX1) {
@@ -244,12 +258,13 @@ public class VariableSet {
         int next = tIdX1;
         int currentCapacity = getVehicleCapacityAt(v, tIdX1) + TaskStep.getWeight(tIdX2);
 
+        // iterate on the tasks in v from tIdX1 to tIdX2
         while (next != tIdX2) {
 
-            if (deliverOfT1 != NULL && next == deliverOfT1) return false;
-            if (pickupOfT2 != NULL && next == pickupOfT2) return false;
+            if (deliverOfT1 != NULL && next == deliverOfT1) return false;   // if deliverOfT1 comes before tIdX2
+            if (pickupOfT2 != NULL && next == pickupOfT2) return false;     // if pickupOfT2 comes before tIdX2
             
-            if (currentCapacity > vehicleCapacity) return false;
+            if (currentCapacity > vehicleCapacity) return false;            // check that weight < capacity if exchange
 
             next = nextTaskT[next];
             currentCapacity += TaskStep.getWeight(next);
@@ -262,7 +277,7 @@ public class VariableSet {
         return true;
     }
 
-    public int removeTaskFromVehicle(int vi) {
+    public int removeFirstTaskFromVehicle(int vi) {
         int pickup = nextTaskV[vi];
         int delivery = TaskStep.getDeliveryId(pickup);
 
@@ -287,17 +302,25 @@ public class VariableSet {
 
     public void updateTime(int vi) {
         int ti = nextTaskV[vi];
-        if (ti != NULL) {
-            time[ti] = 1;
-            int tj;
-            do {
-               tj = nextTaskT[ti];
-                if (tj != NULL) {
-                    time[tj] = time[ti] + 1;
-                    ti = tj;
-                }
-            } while (tj != NULL);
+        int timer = 1;
+
+        while (ti != NULL) {
+            time[ti] = timer;
+            timer++;
+            ti = nextTaskT[ti];
         }
+
+        // if (ti != NULL) {
+        //     time[ti] = 1;
+        //     int tj;
+        //     do {
+        //        tj = nextTaskT[ti];
+        //         if (tj != NULL) {
+        //             time[tj] = time[ti] + 1;
+        //             ti = tj;
+        //         }
+        //     } while (tj != NULL);
+        // }
     }
 
 

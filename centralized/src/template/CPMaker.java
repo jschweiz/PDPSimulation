@@ -74,7 +74,7 @@ public class CPMaker {
             }
         }
 
-        // applying changing task order operator
+        // applying changing task order operator, only if more than 2 tasks (4 TaskStep)
         int length = A_old.computeNumberOfTaskVehicle(vi);
         if (length >= 4) {
             for (int tIdX1 = 1; tIdX1 < length - 1; tIdX1++) {
