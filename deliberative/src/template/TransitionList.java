@@ -19,7 +19,7 @@ public class TransitionList  {
 	public LinkedList<Transition> getList() {
 		return list;
 	}
-
+ 
 	// clone function
 	public TransitionList clone() {
 		TransitionList newT = new TransitionList();

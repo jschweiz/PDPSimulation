@@ -18,7 +18,7 @@ public class Transition  {
 		this.destination = dest;
 		this.task = null;
 		this.cost = cost;
-	}
+	} 
 
 	// init for pickup and deliver transitions
 	public Transition(Action a, Task t) {
