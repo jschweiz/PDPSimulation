@@ -30,6 +30,7 @@ import logist.topology.Topology.City;
  */
 @SuppressWarnings("unused")
 public class CentralizedTemplate implements CentralizedBehavior {
+    public static final boolean DEBUG = true;
 
     private Topology topology;
     private TaskDistribution distribution;

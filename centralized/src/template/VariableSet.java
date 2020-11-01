@@ -10,7 +10,6 @@ import logist.task.Task;
 import logist.topology.Topology.City;
 
 public class VariableSet {
-
     private static int NULL = -1;
     private static List<Vehicle> vehicleList;
 
@@ -26,7 +25,6 @@ public class VariableSet {
     // construct initial variable
 
     public VariableSet(List<Vehicle> vehicles, List<Task> tasks) {
-
         int numTasks = tasks.size();
         int numVehicles = vehicles.size();
 
@@ -49,6 +47,8 @@ public class VariableSet {
         Vehicle currVehicle = vehicles.get(vehicleNumber);
         int stepsOfVehicle = 1;
         TaskStep prevAction = null;
+
+        if (CentralizedTemplate.DEBUG) System.out.println("Building initial solution");
 
         // Basic check : is there a task that cannot fit in any vehicle ? 
         for (Task t : tasks) {
@@ -109,6 +109,7 @@ public class VariableSet {
             nextTaskV[i] = NULL;
         }
 
+        if (CentralizedTemplate.DEBUG) System.out.println("Initial solution built");
         computeCost(true);
     }
 

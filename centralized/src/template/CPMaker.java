@@ -16,6 +16,13 @@ public class CPMaker {
     private static long startTimeMillis;
     private static int COUNTER = 0;
     
+    /**
+     * Set the static parameters of the plan maker.
+     * @param p This is the probability to choose the best neighbour
+     * @param maxIter This is the max number of iterations after which the plan maker returns
+     * @param maxTimeSec This is the max number of seconds after which the plan maker returns
+     * @return Nothing
+     */
     public static void setParameters(double p, int maxIter, int maxTimeSec) {
         if (p >= 0)
             P = p;
@@ -24,7 +31,7 @@ public class CPMaker {
         if (maxTimeSec > 0)
             MAX_TIME_SEC = maxTimeSec;
 
-        String summary = String.format("Run with \t p = %d \t MAX_ITER = %d \t MAX_TIME = %d", P, MAX_ITERATIONS, MAX_TIME_SEC);
+        String summary = String.format("Run with \t p = %f \t MAX_ITER = %d \t MAX_TIME = %d", P, MAX_ITERATIONS, MAX_TIME_SEC);
         System.out.println(summary);
             
     }
