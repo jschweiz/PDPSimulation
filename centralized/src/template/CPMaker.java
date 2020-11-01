@@ -43,14 +43,13 @@ public class CPMaker {
         startTimeMillis = System.currentTimeMillis();
         do {
             A_old = A;
-            System.out.println("\n\n\n\n***********************************************************************************************");
-            System.out.println("************************************ITERATION "+ COUNTER +" ******************************************");
-            System.out.println("***********************************************************************************************");
-            System.out.println(A_old);
             Set<VariableSet> N = chooseNeightbours(A_old);
             A = localChoice(N, A_old);
-            // System.out.println(A_old.compare(A));
             COUNTER++;
+            if (CentralizedTemplate.DEBUG) {
+                System.out.println("\n************************************ITERATION "+ COUNTER +" ******************************************");  
+                System.out.println(A_old);
+            } 
         } while (!conditionIsMet(A, A_old));
         return A;
     }

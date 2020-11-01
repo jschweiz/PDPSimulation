@@ -16,6 +16,7 @@ import logist.behavior.CentralizedBehavior;
 import logist.agent.Agent;
 import logist.config.Parsers;
 import logist.simulation.Vehicle;
+import logist.plan.Action;
 import logist.plan.Plan;
 import logist.task.Task;
 import logist.task.TaskDistribution;
@@ -78,29 +79,40 @@ public class CentralizedTemplate implements CentralizedBehavior {
         CPMaker.setParameters(0.5, 30, 10000);
         VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
         long time_stop = System.currentTimeMillis();
-        System.out.println("Plan computed in : " + (time_stop- time_start)/1000 + " seconds");
+        System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
 
+        System.out.println("Final state : ");
         System.out.println(finalState);
         
-        return null;
+        List<Plan> plans = convertVariableSet(vehicles, finalState);
+        System.out.println(plans.get(0));
+        return plans;
+    }
 
+    
+    public List<Plan> convertVariableSet(List<Vehicle> vehicles, VariableSet vs) {
+        List<Plan> plans = new ArrayList<Plan>();
 
+        for (int i = 0; i < vehicles.size(); i++) {
+            List<TaskStep> executedTaskStep = vs.getTaskStepVehicle(i);
+            List<Action> actions = new ArrayList<Action>();
+            City currentCity = vehicles.get(i).getCurrentCity();
 
-        
-// //		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-//         Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
+            for (TaskStep ts : executedTaskStep) {
+                for (City c : currentCity.pathTo(TaskStep.getInvolvedCity(ts.getMapId())) )
+                    actions.add(new Action.Move(c));
+                if (ts.isPickup)
+                    actions.add(new Action.Pickup(ts.t));
+                else
+                    actions.add(new Action.Delivery(ts.t));
 
-//         List<Plan> plans = new ArrayList<Plan>();
-//         plans.add(planVehicle1);
-//         while (plans.size() < vehicles.size()) {
-//             plans.add(Plan.EMPTY);
-//         }
-        
-//         long time_end = System.currentTimeMillis();
-//         long duration = time_end - time_start;
-//         System.out.println("The plan was generated in " + duration + " milliseconds.");
-        
-//         return plans;
+                currentCity = TaskStep.getInvolvedCity(ts.getMapId());
+            }
+
+            Plan plan = new Plan(vehicles.get(i).getCurrentCity(), actions);
+            plans.add(plan);
+        }
+        return plans;
     }
 
     private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {

@@ -2,6 +2,7 @@ package template;
 
 import logist.simulation.Vehicle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -427,7 +428,7 @@ public class VariableSet {
             }
             s+= "NULL \n";
         }
-        return s + delim;
+        return s + "Cost : " + cost + "\n" + delim;
     }
 
     public String toStringDetails() {
@@ -502,6 +503,23 @@ public class VariableSet {
             return false;
 
         return true;
+    }
+
+    // GET FUNCTIONS
+
+    /**
+     * Computes the ordered of TaskStep executed by vehicleNumber in the current VariableSet instance
+     * @param vehicleNumber Id of the vehicle
+     * @return Nothing.
+     */
+    public List<TaskStep> getTaskStepVehicle(int vehicleNumber) {
+        List<TaskStep> taskStepOrdered = new ArrayList<TaskStep>();
+        int t = nextTaskV[vehicleNumber];
+        while (t != NULL) {
+            taskStepOrdered.add(TaskStep.fromId(t));
+            t = nextTaskT[t];
+        }
+        return taskStepOrdered;
     }
 
 }
