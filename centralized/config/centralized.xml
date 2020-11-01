@@ -4,13 +4,13 @@
 <configuration name="ex3" mode="centralized">
 
 	<!-- global settings -->
-	<settings import="config/settings_default.xml" />
+	<settings import="centralized/config/settings_default.xml" />
 
 	<!-- load the topology from an external file -->
-	<topology import="config/topology/england.xml" />
+	<topology import="centralized/config/topology/england.xml" />
 
 	<!-- load agents -->
-	<agents import="config/agents.xml" />
+	<agents import="centralized/config/agents.xml" />
 	
 	<!-- define task distribution -->
 	<tasks number="30" rngSeed="12345">

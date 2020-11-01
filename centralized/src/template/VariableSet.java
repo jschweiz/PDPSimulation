@@ -4,6 +4,7 @@ import logist.simulation.Vehicle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -117,6 +118,9 @@ public class VariableSet {
 
     // helper functions for CPMaker
 
+    /**
+     * @return int Index of a vehicle with at least a task on board
+     */
     public int getRandomAppropriateVehicle() {
         int n = getNumberVehicles();
         int chosenVehicle = new Random().nextInt(n);
@@ -149,13 +153,55 @@ public class VariableSet {
         return length;
     }
 
+    /**
+     * 
+     * @param v Vehicle number
+     * @return List<Integer> ids of all the pickup TaskSteps in the vehicle number v
+     */
+    public List<Integer> computePickupsIdVehicle(int v) {
+        List<Integer> pickupsId = new ArrayList<Integer>();
+        int t = nextTaskV[v];
+        while (t != NULL) {
+            if (TaskStep.isPickup(t)) {
+                pickupsId.add(t);
+            }
+            t = nextTaskT[t];
+        } 
+        return pickupsId;
+    }
+
 
     // CHANGING FUNCTIONS
-
+    /**
+     * @param v1 Vehicle number whose fist task is removed
+     * @param v2 Vehicle number in which the task is added (in front of all the others)
+     */
     public void changingVehicle(int v1, int v2) {
         // take first task pickup of vehicle
         int pickup = nextTaskV[v1];
         int delivery = removeFirstTaskFromVehicle(v1);
+        nextTaskT[delivery] = nextTaskV[v2];
+        nextTaskT[pickup] = delivery;
+        nextTaskV[v2] = pickup;
+        updateTime(v1);
+        updateTime(v2);
+        vehicle[pickup] = v2;
+        vehicle[delivery] = v2;
+
+        costHandleChangingTasks(v1);
+        costHandleChangingTasks(v2);
+    }
+
+    /**
+     * 
+     * @param v1 Vehicle number whose first task is removed
+     * @param v2 Vehicle number in which the task is added (in front of all the others)
+     * @param pickup Id of the task to remove in v1
+     */
+    public void changingVehicle(int v1, int v2, int pickup) {
+        // take first task pickup of vehicle
+        int delivery = TaskStep.getDeliveryId(pickup);
+        removeTaskFromVehicle(v1, pickup);
         nextTaskT[delivery] = nextTaskV[v2];
         nextTaskT[pickup] = delivery;
         nextTaskV[v2] = pickup;
@@ -311,6 +357,38 @@ public class VariableSet {
         return delivery;
     }
 
+    public void removeTaskFromVehicle(int vi, int pickup) {
+        int delivery = TaskStep.getDeliveryId(pickup);
+
+        // Put under form of LinkedList (easier to remove indices)
+        int t = nextTaskV[vi];
+        if (t == NULL)
+            return;
+        LinkedList<Integer> ll = new LinkedList<Integer>();
+        while (t != NULL) {
+            ll.add(t);
+            t = nextTaskT[t];
+        }
+
+        // remove pickup and delivery
+        ll.remove((Object) pickup);
+        ll.remove((Object) delivery);
+
+        if (ll.isEmpty()){
+            nextTaskV[vi] = NULL;
+            return;
+        }
+
+        t = ll.removeFirst();
+        nextTaskV[vi] = t;
+        while (!ll.isEmpty()) {
+            nextTaskT[t] = ll.removeFirst();
+            t = nextTaskT[t];
+        }
+        nextTaskT[t] = NULL;
+        
+    }
+
     public void updateTime(int vi) {
         int ti = nextTaskV[vi];
         int timer = 1;
@@ -394,6 +472,8 @@ public class VariableSet {
         this.cost -= travelDistVehicle[vehicleNumber] * vehicle.costPerKm();
         travelDistVehicle[vehicleNumber] = getTravelDistanceVehicle(vehicleNumber);
         this.cost += travelDistVehicle[vehicleNumber] * vehicle.costPerKm();
+
+        // this.cost = computeCost(true); 
     }
 
 
@@ -423,10 +503,32 @@ public class VariableSet {
             s+= "   --- vehicle number" + v+ ":  ";
             int t = nextTaskV[v];
             while (t != NULL) {
+                TaskStep tid = TaskStep.fromId(t);
+                String act =  (tid.isPickup) ? "P":"D";
+                s+= TaskStep.getInvolvedCity(t) + " (" + act + tid.id + ") --> ";
+                t = nextTaskT[t];
+            }
+            s+= "NULL";
+            s+= "  travels " + travelDistVehicle[v] + " km";
+            s+= "\n";
+        }
+        return s + "Cost : " + cost + "\n" + delim;
+    }
+
+    public String toString_() {
+        String delim = "===========================================================================\n";
+        String s = delim;
+        s += "VEHICLE CHAINS:\n";
+        for (int v = 0; v < vehicleList.size(); v++) {
+            s+= "   --- vehicle number" + v+ ":  ";
+            int t = nextTaskV[v];
+            while (t != NULL) {
                 s+= TaskStep.fromId(t) + " --> ";
                 t = nextTaskT[t];
             }
-            s+= "NULL \n";
+            s+= "NULL";
+            s+= "  travels " + travelDistVehicle[v] + " km";
+            s+= "\n";
         }
         return s + "Cost : " + cost + "\n" + delim;
     }
