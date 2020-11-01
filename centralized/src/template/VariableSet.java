@@ -50,7 +50,7 @@ public class VariableSet {
         int stepsOfVehicle = 1;
         TaskStep prevAction = null;
 
-        if (CentralizedTemplate.DEBUG) System.out.println("Building initial solution");
+        if (CentralizedTemplate.DEBUG > 0) System.out.println("Building initial solution");
 
         // Basic check : is there a task that cannot fit in any vehicle ? 
         for (Task t : tasks) {
@@ -111,8 +111,15 @@ public class VariableSet {
             nextTaskV[i] = NULL;
         }
 
-        if (CentralizedTemplate.DEBUG) System.out.println("Initial solution built");
+        if (CentralizedTemplate.DEBUG > 0) System.out.println("Initial solution built");
         computeCost(true);
+    }
+
+    /**
+     * Performs a random shake of all tasks
+     */
+    public void randomShake() {
+        
     }
 
 
@@ -622,6 +629,19 @@ public class VariableSet {
             t = nextTaskT[t];
         }
         return taskStepOrdered;
+    }
+
+    /** 
+     * Useful to see if a solution involve one or several vehicles
+     * @return int Number of vehicle with at least one task
+     */
+    public int getNumberUsedVehicles() {
+        int counter = 0;
+        for (int i = 0; i < nextTaskV.length; i++) {
+            if (nextTaskV[i] != NULL)
+                counter++;
+        }
+        return counter;
     }
 
 }
