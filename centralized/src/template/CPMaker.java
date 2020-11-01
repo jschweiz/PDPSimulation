@@ -49,7 +49,9 @@ public class CPMaker {
             if (CentralizedTemplate.DEBUG) {
                 System.out.println("\n************************************ITERATION "+ COUNTER +" ******************************************");  
                 System.out.println(A_old);
-            } 
+            } else if (COUNTER % 100 == 0) {
+                System.out.println("Iteration " + COUNTER + " Cost : " + A.getCost()); 
+            }
         } while (!conditionIsMet(A, A_old));
         return A;
     }
@@ -124,8 +126,10 @@ public class CPMaker {
 
     public static VariableSet localChoice(Set<VariableSet> N, VariableSet A_old) {
         // return A with probability p
-        if (new Random().nextDouble() < CPMaker.P) 
-            return findBest(N);
+
+        VariableSet bestNeighbor = findBest(N);
+        if (new Random().nextDouble() < CPMaker.P )
+            return bestNeighbor;
         else    
             return A_old;
     }
