@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import logist.task.Task;
+import logist.topology.Topology.City;
 
 public class VariableSet {
 
@@ -19,6 +20,7 @@ public class VariableSet {
     private int[] time;
     private int[] vehicle;
 
+    private double[] travelDistVehicle;
     private double cost = -1;
 
     // construct initial variable
@@ -32,7 +34,8 @@ public class VariableSet {
         this.nextTaskV = new int[numVehicles];
         this.nextTaskT = new int[numTasks * 2];
         this.time = new int[numTasks * 2];
-        this.vehicle = new int[numTasks*2];
+        this.vehicle = new int[numTasks * 2];
+        this.travelDistVehicle = new double[numVehicles];
 
         // intialize all the task and tasksteps variables
         TaskStep.NUM_TASKS = numTasks;
@@ -105,6 +108,8 @@ public class VariableSet {
         for (int i = vehicleNumber + 1; i < numVehicles; i++) {
             nextTaskV[i] = NULL;
         }
+
+        computeCost(true);
     }
 
 
@@ -156,6 +161,9 @@ public class VariableSet {
         updateTime(v2);
         vehicle[pickup] = v2;
         vehicle[delivery] = v2;
+
+        costHandleChangingTasks(v1);
+        costHandleChangingTasks(v2);
     }
 
     public void changingTaskOrder(int vi, int tIdX1, int tIdX2) {
@@ -205,6 +213,8 @@ public class VariableSet {
             nextTaskT[t1] = tPost2;
         }
         updateTime(vi);
+
+        costHandleChangingTasks(vi);
     }
 
 
@@ -324,25 +334,85 @@ public class VariableSet {
 
     // COST FUNCTION
     public double getCost() {
-        return 1;
+        return cost;
+    }
+
+    /**
+     * Compute cost and replace the attribute of the instance
+     * @param fromScratch This says whether travelDistVehicle should be computed from scratch
+     * @return double. Cost of the VariableSet
+     */
+    public double computeCost(boolean fromScratch) {
+        if (fromScratch)
+            computeTravelDistanceList();
+        double newCost = 0;
+        for (int vehicleNumber = 0; vehicleNumber < nextTaskV.length; vehicleNumber++) {
+            newCost += travelDistVehicle[vehicleNumber] * vehicleList.get(vehicleNumber).costPerKm(); 
+        }
+        cost = newCost;
+        return newCost;
+    }
+
+    public void computeTravelDistanceList() {
+        for (int i = 0; i < nextTaskV.length; i++) {
+            travelDistVehicle[i] = getTravelDistanceVehicle(i);
+        }
+    }
+
+    public double getTravelDistanceVehicle(int vehicleNumber) {
+        Vehicle vehicle = vehicleList.get(vehicleNumber);
+        double distVehicle = 0;
+
+        int t1 = nextTaskV[vehicleNumber];
+        if (t1 == NULL) 
+            return 0;
+
+        // distance to first task of vehicle
+        distVehicle += vehicle.getCurrentCity().distanceTo(TaskStep.getInvolvedCity(t1));
+
+        // distance between tasks
+        int t2;
+        while ((t2 = nextTaskT[t1]) != NULL) {
+            City cityT1 = TaskStep.getInvolvedCity(t1);
+            City cityT2 = TaskStep.getInvolvedCity(t2);
+            distVehicle += cityT1.distanceTo(cityT2);
+
+            t1 = t2;
+        }
+        return distVehicle;
+    }
+
+    /**
+     * Update the travelDistVehicle[vehicleNumber] and the cost.
+     * @param vehicleNumber This is the vehicle number whose order of tasks has changed
+     * @return Nothing
+     */
+    public void costHandleChangingTasks(int vehicleNumber) {
+        Vehicle vehicle = vehicleList.get(vehicleNumber);
+        this.cost -= travelDistVehicle[vehicleNumber] * vehicle.costPerKm();
+        travelDistVehicle[vehicleNumber] = getTravelDistanceVehicle(vehicleNumber);
+        this.cost += travelDistVehicle[vehicleNumber] * vehicle.costPerKm();
     }
 
 
     // CLONE FUNCTIONS
 
-    public VariableSet(int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle) {
+    public VariableSet(int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle, double[] travelDistList, double cost) {
         this.nextTaskV = nextTaskV;
         this.nextTaskT = nextTaskT;
         this.time = time;
         this.vehicle = vehicle;
+        this.travelDistVehicle = travelDistList;
+        this.cost = cost;
     }
 
     public VariableSet copy() {
-        return new VariableSet(nextTaskT.clone(), nextTaskV.clone(), time.clone(), vehicle.clone());
+        return new VariableSet(nextTaskT.clone(), nextTaskV.clone(), time.clone(), vehicle.clone(), travelDistVehicle.clone(), cost);
     }
 
 
     // TO STRING FUNCTIONS
+
     public String toString() {
         String delim = "===========================================================================\n";
         String s = delim;
