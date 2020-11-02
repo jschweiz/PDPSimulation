@@ -39,17 +39,14 @@ public class TaskStep {
     public static TaskStep fromId(int id) {
         if (id == NULL) return null;
         int rid = getRealTaskId(id);
-        boolean isPickup = isPickup(id);
-        return new TaskStep(TASK_LIST.get(rid), rid, isPickup);
+        return new TaskStep(TASK_LIST.get(rid), rid, isPickup(id));
     }
 
     public static City getInvolvedCity(int id) {
         if (id == NULL) return null;
         int rid = getRealTaskId(id);
-        boolean isPickup = isPickup(id);
         Task t = TASK_LIST.get(rid);
-
-        return (isPickup) ? t.pickupCity : t.deliveryCity;
+        return isPickup(id) ? t.pickupCity : t.deliveryCity;
     }
 
 

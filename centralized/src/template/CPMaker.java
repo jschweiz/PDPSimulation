@@ -11,13 +11,15 @@ import logist.task.Task;
 
 public class CPMaker {
 
+    // Strings
     private static String SUMMARY_STRING = "Run with \t p = %f \t MAX_ITER = %d \t MAX_TIME = %d sec";
     private static String SUB_ITERATION_STRING = "Iteration %d Cost : %f";
     private static String ITERATION_STRING
             = "************************ ITERATION %d \t vehicles : %d\t Cost : %f ******************************";
 
+    // General parameters
     private static double P = 0.4;
-    private static int MAX_ITERATIONS = 30;
+    private static int MAX_ITERATIONS = 2000;
     private static long MAX_TIME_SEC = 30;
     private static int DEBUG = 0;
     private static boolean BETA = false;
@@ -29,10 +31,9 @@ public class CPMaker {
     private static double EXPLORE_THRESHOLD_STABLE = 0.005;
     private static double EXPLORE_THRESHOLD_BOTTOM = 0.01;
 
-
+    // object variables
     private static long START_TIME_MILLIS;
     private static int COUNTER = 1;
-
     private static Set<VariableSet> localMinima = new HashSet<VariableSet>();
 
     /**

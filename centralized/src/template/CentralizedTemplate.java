@@ -31,6 +31,8 @@ import logist.topology.Topology.City;
  */
 @SuppressWarnings("unused")
 public class CentralizedTemplate implements CentralizedBehavior {
+
+    // general parameters for model
     public static final int DEBUG = 1;
     public static final double P = 0.3;
     public static final int MAX_ITERATIONS = 5000;
@@ -63,8 +65,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
         this.topology = topology;
         this.distribution = distribution;
         this.agent = agent;
-
-
     }
 
     @Override
@@ -77,10 +77,11 @@ public class CentralizedTemplate implements CentralizedBehavior {
         for (Task t : tasks) 
             taskList.add(t);
 
-        System.out.println("Testing VariableSet structure");
+        System.out.println("Starting computing best plan...");
 
         CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan / 1000 - 1, DEBUG); // take 1 sec of margin
         VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
+
         long time_stop = System.currentTimeMillis();
         System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
 
@@ -88,7 +89,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
         System.out.println(finalState);
         
         List<Plan> plans = convertVariableSet(vehicles, finalState);
-        System.out.println(plans.get(0));
         return plans;
     }
 
@@ -102,14 +102,14 @@ public class CentralizedTemplate implements CentralizedBehavior {
             City currentCity = vehicles.get(i).getCurrentCity();
 
             for (TaskStep ts : executedTaskStep) {
-                for (City c : currentCity.pathTo(TaskStep.getInvolvedCity(ts.getMapId())) )
+                City destination = TaskStep.getInvolvedCity(ts.getMapId());
+                for (City c : currentCity.pathTo(destination)) {
                     actions.add(new Action.Move(c));
-                if (ts.isPickup)
-                    actions.add(new Action.Pickup(ts.t));
-                else
-                    actions.add(new Action.Delivery(ts.t));
+                }
+                if (ts.isPickup) actions.add(new Action.Pickup(ts.t));
+                else actions.add(new Action.Delivery(ts.t));
 
-                currentCity = TaskStep.getInvolvedCity(ts.getMapId());
+                currentCity = destination;
             }
 
             Plan plan = new Plan(vehicles.get(i).getCurrentCity(), actions);
