@@ -67,7 +67,7 @@ public class CPMaker {
         VariableSet A_old = null;
         do {
             A_old = A;
-            Set<VariableSet> N = chooseNeightbours(A_old);
+            Set<VariableSet> N = chooseNeighbours(A_old);
             A = localChoice(N, A_old);
             printReport(A, A_old);
         } while (!conditionIsMet(A, A_old));
@@ -99,7 +99,7 @@ public class CPMaker {
         return false;
     }
 
-    private static Set<VariableSet> chooseNeightbours(VariableSet A_old) {
+    private static Set<VariableSet> chooseNeighbours(VariableSet A_old) {
         Set<VariableSet> N = new HashSet<VariableSet>();
         int vi;
 
