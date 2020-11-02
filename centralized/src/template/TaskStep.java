@@ -3,6 +3,7 @@ package template;
 import java.util.List;
 
 import logist.task.Task;
+import logist.topology.Topology.City;
 
 public class TaskStep {
 
@@ -40,6 +41,15 @@ public class TaskStep {
         int rid = getRealTaskId(id);
         boolean isPickup = isPickup(id);
         return new TaskStep(TASK_LIST.get(rid), rid, isPickup);
+    }
+
+    public static City getInvolvedCity(int id) {
+        if (id == NULL) return null;
+        int rid = getRealTaskId(id);
+        boolean isPickup = isPickup(id);
+        Task t = TASK_LIST.get(rid);
+
+        return (isPickup) ? t.pickupCity : t.deliveryCity;
     }
 
 

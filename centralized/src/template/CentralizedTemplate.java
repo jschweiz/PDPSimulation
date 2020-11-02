@@ -16,6 +16,7 @@ import logist.behavior.CentralizedBehavior;
 import logist.agent.Agent;
 import logist.config.Parsers;
 import logist.simulation.Vehicle;
+import logist.plan.Action;
 import logist.plan.Plan;
 import logist.task.Task;
 import logist.task.TaskDistribution;
@@ -30,6 +31,10 @@ import logist.topology.Topology.City;
  */
 @SuppressWarnings("unused")
 public class CentralizedTemplate implements CentralizedBehavior {
+    public static final int DEBUG = 1;
+    public static final double P = 0.3;
+    public static final int MAX_ITERATIONS = 2000;
+    public static final int DEPTH_SEARCH = 4;
 
     private Topology topology;
     private TaskDistribution distribution;
@@ -66,77 +71,51 @@ public class CentralizedTemplate implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
 
-        ///////////////////////////////////////////////////////
-        ///////////////TESTING ON EXACT SET////////////////////
-        ///////////////////////////////////////////////////////
-        int[] weights = {5,2,3,3,3};
-        List<Task> tasksList = new LinkedList<Task>();
-        for (int w = 0; w < weights.length; w++) {
-            tasksList.add(new Task(w, null, null, 10, weights[w]));
-        }
-        ///////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////
-        
+        // convert TaskSet to List<Task> as used in the code structure
+        int nTasks = tasks.size();
+        List<Task> taskList = new ArrayList<Task>(nTasks);
+        for (Task t : tasks) 
+            taskList.add(t);
 
         System.out.println("Testing VariableSet structure");
 
-        CPMaker pm = new CPMaker();
-        VariableSet finalState = pm.runSLS(vehicles, tasksList);
+        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan / 1000 - 1); // take 1 sec of margin
+        VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
+        long time_stop = System.currentTimeMillis();
+        System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
 
+        System.out.println("Final state : ");
         System.out.println(finalState);
-
-        // VariableSet abis = pm.changingVehicle(A,0,1);
-
-        // System.out.println(A.compare(A));
-
-        // System.out.println("There is " + N.size() + " possible new states");
-
-        // System.out.println(del + ":" + del.getMapId() + "     -----    " + pic);
-
-        // System.out.println("=================>" + A.validChange(del.getMapId(), pic.getMapId()));
-
-        // for (VariableSet v : N) {
-        //     System.out.println(v);
-        // }
-
         
-        // VariableSet newA = pm.changingTaskOrder(set, 0, 1, 3);
-        // TaskStep pick0 = new TaskStep(null, 0, true);
-        // TaskStep deliv0 = new TaskStep(null, 0, false);
-        // TaskStep pick1 = new TaskStep(null, 1, true);
-        // TaskStep deliv1 = new TaskStep(null, 1, false);
-        // TaskStep pick3 = new TaskStep(null, 3, true);
-        // TaskStep deliv3 = new TaskStep(null, 3, false);
+        List<Plan> plans = convertVariableSet(vehicles, finalState);
+        System.out.println(plans.get(0));
+        return plans;
+    }
 
-        // System.out.println(pick0 + "" + pick1 +  set.validChange(pick0.getMapId(),pick1.getMapId()));
-        // System.out.println(pick0 + "" + deliv1 +  set.validChange(pick0.getMapId(),deliv1.getMapId()));
-        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
-        // System.out.println(deliv0 + "" + pick3 +  set.validChange(deliv0.getMapId(),pick3.getMapId()));
-        // System.out.println(deliv0 + "" + pick1 +  set.validChange(deliv0.getMapId(),pick1.getMapId()));
-        // set.changingTaskOrder(0, deliv0.getMapId(), pick3.getMapId());
-        // System.out.println(set);
+    
+    public List<Plan> convertVariableSet(List<Vehicle> vehicles, VariableSet vs) {
+        List<Plan> plans = new ArrayList<Plan>();
 
-        // System.out.println(set);
+        for (int i = 0; i < vehicles.size(); i++) {
+            List<TaskStep> executedTaskStep = vs.getTaskStepVehicle(i);
+            List<Action> actions = new ArrayList<Action>();
+            City currentCity = vehicles.get(i).getCurrentCity();
 
-        return null;
+            for (TaskStep ts : executedTaskStep) {
+                for (City c : currentCity.pathTo(TaskStep.getInvolvedCity(ts.getMapId())) )
+                    actions.add(new Action.Move(c));
+                if (ts.isPickup)
+                    actions.add(new Action.Pickup(ts.t));
+                else
+                    actions.add(new Action.Delivery(ts.t));
 
+                currentCity = TaskStep.getInvolvedCity(ts.getMapId());
+            }
 
-
-        
-// //		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-//         Plan planVehicle1 = naivePlan(vehicles.get(0), tasks);
-
-//         List<Plan> plans = new ArrayList<Plan>();
-//         plans.add(planVehicle1);
-//         while (plans.size() < vehicles.size()) {
-//             plans.add(Plan.EMPTY);
-//         }
-        
-//         long time_end = System.currentTimeMillis();
-//         long duration = time_end - time_start;
-//         System.out.println("The plan was generated in " + duration + " milliseconds.");
-        
-//         return plans;
+            Plan plan = new Plan(vehicles.get(i).getCurrentCity(), actions);
+            plans.add(plan);
+        }
+        return plans;
     }
 
     private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
