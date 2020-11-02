@@ -23,7 +23,7 @@
             "name": "centralized",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "centralized/config/centralized_simplified.xml centralized-random"
+            "args": "centralized/config/centralized.xml centralized-random"
         }
     ]
 }

@@ -33,8 +33,8 @@ import logist.topology.Topology.City;
 public class CentralizedTemplate implements CentralizedBehavior {
     public static final int DEBUG = 1;
     public static final double P = 0.3;
-    public static final int MAX_ITERATIONS = 2000;
-    public static final int DEPTH_SEARCH = 4;
+    public static final int MAX_ITERATIONS = 5000;
+    public static final int DEPTH_SEARCH = 8;
 
     private Topology topology;
     private TaskDistribution distribution;
@@ -79,7 +79,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
         System.out.println("Testing VariableSet structure");
 
-        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan / 1000 - 1); // take 1 sec of margin
+        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan / 1000 - 1, DEBUG); // take 1 sec of margin
         VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
         long time_stop = System.currentTimeMillis();
         System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
