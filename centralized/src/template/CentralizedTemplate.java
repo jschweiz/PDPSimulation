@@ -33,7 +33,7 @@ import logist.topology.Topology.City;
 public class CentralizedTemplate implements CentralizedBehavior {
 
     // general parameters for model
-    public static final int DEBUG = 1;
+    public static final int DEBUG = 0;
     public static final double P = 0.3;
     public static final int MAX_ITERATIONS = 5000;
     public static final int DEPTH_SEARCH = 8;
