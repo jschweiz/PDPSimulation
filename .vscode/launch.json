@@ -18,12 +18,20 @@
         //     "mainClass": "logist.LogistPlatform",
         //     "args": "deliberative/config/deliberative.xml deliberative-astar"
         // },
+        // {
+        //     "type": "java",
+        //     "name": "centralized",
+        //     "request": "launch",
+        //     "mainClass": "logist.LogistPlatform",
+        //     "args": "centralized/config/centralized.xml centralized-main"
+        // },
+        
         {
             "type": "java",
-            "name": "centralized",
+            "name": "auction",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "centralized/config/centralized.xml centralized-main"
+            "args": "auction/config/auction.xml auction-main-67"
         }
     ]
 }

@@ -4,13 +4,13 @@
 <configuration name="ex4-auction">
 
 	<!-- load settings -->
-	<settings import="config/settings_auction.xml" />
+	<settings import="auction/config/settings_auction.xml" />
 	
 	<!-- load the topology from an external file -->
-	<topology import="config/topology/england.xml" />
+	<topology import="auction/config/topology/england.xml" />
 	
 	<!-- load agents from an external file -->
-	<agents import="config/agents.xml" />
+	<agents import="auction/config/agents.xml" />
 	
 	<!-- define task distribution -->
 	<tasks number="20" rngSeed="123456">

@@ -5,8 +5,14 @@
 	
 	<!-- #### AUCTION AGENTS ### -->
 	<agent name="auction-random">
-		<set class-path="bin/"/>
+		<set class-path="auction/bin/"/>
 		<set class-name="template.AuctionTemplate"/>
 	</agent>
+
+	<agent name="auction-main-67">
+		<set class-path="auction/bin/"/>
+		<set class-name="auction.Auction"/>
+	</agent>
+
 	
 </agents>
