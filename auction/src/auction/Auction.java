@@ -1,14 +1,19 @@
 package auction;
 
+import java.io.File;
 //the list of imports
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import logist.LogistSettings;
 import logist.Measures;
 import logist.behavior.AuctionBehavior;
+import logist.config.Parsers;
 import logist.agent.Agent;
 import logist.simulation.Vehicle;
+import logist.plan.Action;
 import logist.plan.Plan;
 import logist.task.Task;
 import logist.task.TaskDistribution;
@@ -23,88 +28,88 @@ import logist.topology.Topology.City;
  */
 @SuppressWarnings("unused")
 public class Auction implements AuctionBehavior {
-
+	// General variables 
 	private Topology topology;
 	private TaskDistribution distribution;
 	private Agent agent;
-	private Random random;
-	private Vehicle vehicle;
-	private City currentCity;
+    private long timeout_setup;
+    private long timeout_plan;
+    private long timeout_bid;
+
+	// Bid relative variables
+	private List<Task> wonTasks;
+	private Bider bider;
+	
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
 			Agent agent) {
 
+		// Get timeouts
+        LogistSettings ls = null;
+        try {
+            ls = Parsers.parseSettings("config" + File.separator + "settings_default.xml");
+        }
+        catch (Exception exc) {
+            System.out.println("There was a problem loading the configuration file.");
+        }
+        timeout_setup = ls.get(LogistSettings.TimeoutKey.SETUP);
+        timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
+        timeout_bid = ls.get(LogistSettings.TimeoutKey.BID);
+
+		// Save parameters
 		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
-		this.vehicle = agent.vehicles().get(0);
-		this.currentCity = vehicle.homeCity();
 
-		long seed = -9019554669489983951L * currentCity.hashCode() * agent.id();
-		this.random = new Random(seed);
+		// Bid-relative
+		wonTasks = new LinkedList<Task>();
+		bider = new Bider(topology, distribution, agent);
 	}
 
 	@Override
 	public void auctionResult(Task previous, int winner, Long[] bids) {
 		if (winner == agent.id()) {
-			currentCity = previous.deliveryCity;
+			wonTasks.add(previous);
+			bider.addTask(previous);
 		}
 	}
 	
 	@Override
 	public Long askPrice(Task task) {
-
-		if (vehicle.capacity() < task.weight)
-			return null;
-
-		long distanceTask = task.pickupCity.distanceUnitsTo(task.deliveryCity);
-		long distanceSum = distanceTask
-				+ currentCity.distanceUnitsTo(task.pickupCity);
-		double marginalCost = Measures.unitsToKM(distanceSum
-				* vehicle.costPerKm());
-
-		double ratio = 1.0 + (random.nextDouble() * 0.05 * task.id);
-		double bid = ratio * marginalCost;
-
-		return (long) Math.round(bid);
+		long bid = bider.proposeTask(task);
+		return bid;
 	}
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-
-		Plan planVehicle1 = naivePlan(vehicle, tasks);
-
-		List<Plan> plans = new ArrayList<Plan>();
-		plans.add(planVehicle1);
-		while (plans.size() < vehicles.size())
-			plans.add(Plan.EMPTY);
-
+		VariableSet finalState = bider.getVS();
+		List<Plan> plans = convertVariableSet(vehicles, finalState);
 		return plans;
 	}
 
-	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
-		City current = vehicle.getCurrentCity();
-		Plan plan = new Plan(current);
+	public List<Plan> convertVariableSet(List<Vehicle> vehicles, VariableSet vs) {
+        List<Plan> plans = new ArrayList<Plan>();
 
-		for (Task task : tasks) {
-			// move: current city => pickup location
-			for (City city : current.pathTo(task.pickupCity))
-				plan.appendMove(city);
+        for (int i = 0; i < vehicles.size(); i++) {
+            List<TaskStep> executedTaskStep = vs.getTaskStepVehicle(i);
+            List<Action> actions = new ArrayList<Action>();
+            City currentCity = vehicles.get(i).getCurrentCity();
 
-			plan.appendPickup(task);
+            for (TaskStep ts : executedTaskStep) {
+                City destination = TaskStep.getInvolvedCity(ts.getMapId());
+                for (City c : currentCity.pathTo(destination)) {
+                    actions.add(new Action.Move(c));
+                }
+                if (ts.isPickup) actions.add(new Action.Pickup(ts.t));
+                else actions.add(new Action.Delivery(ts.t));
 
-			// move: pickup location => delivery location
-			for (City city : task.path())
-				plan.appendMove(city);
+                currentCity = destination;
+            }
 
-			plan.appendDelivery(task);
-
-			// set current city
-			current = task.deliveryCity;
-		}
-		return plan;
-	}
+            Plan plan = new Plan(vehicles.get(i).getCurrentCity(), actions);
+            plans.add(plan);
+        }
+        return plans;
+    }
 }
