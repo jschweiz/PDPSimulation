@@ -8,9 +8,21 @@
 
 
 ## To do : CPMaker improvements
-- [ ] Add `addTask()` to `CPMaker`. Goal : strategically place the new task in the former plan found, and search from this configuration (hopefully reduces greatly the number of iterations)
+### Not wasting the previous computations (compute smarter)
+Idea : when proposing a task, start computing the optimal plan starting by the previous plan found + the new proposed task. Goal : reduce computing time
+- [x] Add possibility to run `CPMaker` starting from a given VariableSet. 
+- [x] Implement `~addTask` to `VariableSet` : strategically place the new task in the former plan found, and search from this configuration (hopefully reduces greatly the number of iterations)
+
+**Conclusion** : 
+- with 20 tasks, 2000 iterations, 2 vehicles : the "compute from scratch" method and the "compute smarter" method yields the same score *in average*
+- with 20 tasks, 2000 iterations, 5 vehicles : the "compute smarter" is slightly better (~700$ saved, for a total cost of 16000 $ in average)
+- --> **Not great, but still time saving for biding strategy**
+
+### Stop computing when it is useless to continue
 - [ ] Add a stop condition to `CPMaker` based on score gradient. E.g stop if 1000 iterations with the same score
-- [ ] Add `randomShake(n)` to take `n` random neighbors and shake the current solution. **Avoid computing all the neighbors for this step**
+
+### Restart computation based on a randomized solution
+- [ ] Add `randomShake(n)` to take `n` random neighbors and shake the current solution. **Please avoid computing all the neighbors for this step**
 
 
 ## To do : Bider improvements
