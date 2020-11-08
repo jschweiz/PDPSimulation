@@ -69,10 +69,10 @@ public class CPMaker {
      * @param maxIter    List of tasks that need to be picked and delivered
      * @return VariableSet (optimal) repartition of tasks accross vehicles
      */
-    public static VariableSet run(List<Vehicle> vehicles, List<Task> tasks){
+    public static VariableSet run(List<Vehicle> vehicles, List<Task> tasks, VariableSet startPoint){
         initialize();
         long time_start = System.currentTimeMillis();
-        VariableSet vs = runSLS(vehicles, tasks);
+        VariableSet vs = runSLS(vehicles, tasks, startPoint);
         long time_stop = System.currentTimeMillis();
         
         if(DEBUG > 0) System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
@@ -81,8 +81,13 @@ public class CPMaker {
         return vs;
     }
    
-    public static VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks) {
-        VariableSet A = selectInitialSolution(vehicles, tasks);
+    public static VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks, VariableSet startPoint) {
+        VariableSet A;
+        if (startPoint == null)
+            A = selectInitialSolution(vehicles, tasks);
+        else
+            A = startPoint;
+
         VariableSet A_old = null;
         do {
             A_old = A;
@@ -288,6 +293,10 @@ public class CPMaker {
         // else if (COUNTER % 100 == 0) {
         //     System.out.println(String.format(SUB_ITERATION_STRING, COUNTER, A.getCost())); 
         // }
+    }
+
+    public static VariableSet addTask(VariableSet vs, Task t) {
+        return null;
     }
     
 }

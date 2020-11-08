@@ -32,7 +32,7 @@ public class Bider {
 
     public long proposeTask(Task t) {
         tasks.add(t);
-        VariableSet vs = CPMaker.run(agent.vehicles(), tasks);
+        VariableSet vs = CPMaker.run(agent.vehicles(), tasks, null);
         double newCost = vs.getCost();
         System.out.println(vs);
         tasks.remove(t);
@@ -42,7 +42,7 @@ public class Bider {
     }
 
     public VariableSet getVS() {
-        return CPMaker.run(agent.vehicles(), tasks);
+        return CPMaker.run(agent.vehicles(), tasks, null);
     }
     
 }
