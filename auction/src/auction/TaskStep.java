@@ -53,9 +53,6 @@ public class TaskStep {
         TASK_LIST = taskList;
     }
     
-    public static void addTask(Task t) {
-        TASK_LIST.add(t);
-    }
 
     public static TaskStep fromId(int id) {
         if (id == NULL) return null;

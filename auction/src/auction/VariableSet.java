@@ -15,6 +15,8 @@ public class VariableSet {
     private static int NULL = -1;
     private static List<Vehicle> vehicleList;
 
+    private int numTasks;
+    private int numVehicles;
     private int[] nextTaskV;
     private int[] nextTaskT;
 
@@ -24,11 +26,11 @@ public class VariableSet {
     private double[] travelDistVehicle;
     private double cost = Double.MAX_VALUE;
 
-    // construct initial variable
+    // construct initial variableSet
 
     public VariableSet(List<Vehicle> vehicles, List<Task> tasks) {
-        int numTasks = tasks.size();
-        int numVehicles = vehicles.size();
+        numTasks = tasks.size();
+        numVehicles = vehicles.size();
 
         // initialize all variable arrays
         this.nextTaskV = new int[numVehicles];
@@ -111,7 +113,7 @@ public class VariableSet {
         }
 
         if (CPMaker.DEBUG > 0) System.out.println("Initial solution built");
-        computeCost(true);
+        computeCost();
     }
 
     // CHANGING FUNCTIONS
@@ -340,7 +342,7 @@ public class VariableSet {
      * Compute cost and replace the attribute of the instance
      * @return double. Cost of the VariableSet
      */
-    private double computeCost(boolean fromScratch) {
+    private double computeCost() {
         for (int i = 0; i < nextTaskV.length; i++) {
             travelDistVehicle[i] = getTravelDistanceVehicle(i);
         }
@@ -507,6 +509,10 @@ public class VariableSet {
         return cost;
     }
 
+    public double getTrueCost() {
+        return computeCost();
+    }
+
     public int getNumberVehicles() {
         return vehicleList.size();
     }
@@ -523,7 +529,9 @@ public class VariableSet {
 
     // CLONE FUNCTIONS
 
-    private VariableSet(int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle, double[] travelDistList, double cost) {
+    private VariableSet(int numVehicles, int numTasks, int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle, double[] travelDistList, double cost) {
+        this.numVehicles = numVehicles;
+        this.numTasks = numTasks;
         this.nextTaskV = nextTaskV;
         this.nextTaskT = nextTaskT;
         this.time = time;
@@ -532,8 +540,69 @@ public class VariableSet {
         this.cost = cost;
     }
 
+    private VariableSet(int updateVehicle, int numVehicles, int numTasks, int[] nextTaskT, int[] nextTaskV, int[] time, int[] vehicle, double[] travelDistList, double cost) {
+        this.numVehicles = numVehicles;
+        this.numTasks = numTasks;
+        this.nextTaskV = nextTaskV;
+        this.nextTaskT = nextTaskT;
+        this.time = time;
+        this.vehicle = vehicle;
+        this.travelDistVehicle = travelDistList;
+        this.cost = cost;
+
+        updateTime(updateVehicle);
+        computeCost();
+    }
+
+
     public VariableSet copy() {
-        return new VariableSet(nextTaskT.clone(), nextTaskV.clone(), time.clone(), vehicle.clone(), travelDistVehicle.clone(), cost);
+        return new VariableSet(numVehicles, numTasks, nextTaskT.clone(), nextTaskV.clone(), 
+                                time.clone(), vehicle.clone(), travelDistVehicle.clone(), cost);
+    }
+
+    public VariableSet copyPlusTask(Task t) {
+        // Clone and initialize variables
+        int newNumTasks = numTasks + 1;
+        int[] newNextTaskV = nextTaskV.clone();
+        double[] newTravelDistVehicle = travelDistVehicle.clone();
+        int[] newNextTaskT = new int[newNumTasks * 2];
+        int[] newTime = new int[newNumTasks * 2];
+        int[] newVehicle = new int[newNumTasks * 2];
+
+        for (int i = 0; i < numTasks * 2; i++) {
+            newNextTaskT[i] = nextTaskT[i];
+            newNextTaskT[i] = nextTaskT[i];
+            newVehicle[i] = nextTaskT[i];
+        }
+
+        // add task to taskStep
+        TaskStep tsPickup = new TaskStep(t, numTasks, true);
+        TaskStep tsDelivery = new TaskStep(t, numTasks, false);
+        int pickup = tsPickup.getMapId();
+        int delivery = tsDelivery.getMapId();
+
+        // check capacities of vehicles
+        int v = -1;
+        for (int i = 0; i < numVehicles ; i++) {
+            if (vehicleList.get(i).capacity() >= t.weight) {
+                v = i;
+                break;
+            }
+        }
+        
+        // no vehicle has the required capacity for the task
+        if (v == -1) {
+            System.err.println("No vehicle has enough capacity to carry this task");
+            return null;
+        }
+        newNextTaskT[delivery] = newNextTaskV[v];
+        newNextTaskT[pickup] = delivery;
+        newNextTaskV[v] = pickup;
+        newVehicle[pickup] = v;
+        newVehicle[delivery] = v;
+
+        return new VariableSet(v, numVehicles, newNumTasks, newNextTaskT, newNextTaskV, 
+        newTime, newVehicle, newTravelDistVehicle, cost);
     }
 
 

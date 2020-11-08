@@ -89,6 +89,8 @@ public class CPMaker {
             A = startPoint;
 
         VariableSet A_old = null;
+        START_TIME_MILLIS = System.currentTimeMillis();
+        COUNTER = 0;
         do {
             A_old = A;
             Set<VariableSet> N = chooseNeighbours(A_old);
@@ -102,9 +104,6 @@ public class CPMaker {
     }
 
     private static VariableSet selectInitialSolution(List<Vehicle> vehicles,  List<Task> tasks) {
-        // initialize variables for algo
-        START_TIME_MILLIS = System.currentTimeMillis();
-        COUNTER = 0;
         // create a basic environment of variables by giving all tasks to a vehicle
         return new VariableSet(vehicles, tasks);
     }

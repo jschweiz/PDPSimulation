@@ -1,6 +1,6 @@
 package auction;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import logist.agent.Agent;
@@ -13,36 +13,49 @@ public class Bider {
 	private TaskDistribution distribution;
     private Agent agent;
     
-    private List<Task> tasks;
-    private double currentCost;
+    private List<Task> wonTasks;
+    private VariableSet wonVs;
+    private VariableSet proposedVs;
 
     public Bider(Topology topology, TaskDistribution distribution, Agent agent){
 		this.topology = topology;
 		this.distribution = distribution;
         this.agent = agent;
         
-        this.tasks = new LinkedList<Task>();
+        this.wonTasks = new ArrayList<Task>();
+        this.wonVs = null;
+        this.proposedVs = null;
         CPMaker.setParameters(-1, 4000, 5, -1, -1);
-        currentCost = 0;
     }
 
     public void addTask(Task t) {
-        tasks.add(t);
+        wonVs = proposedVs;
+        wonTasks.add(t);
     }
 
+    /**
+     * ESSENTIAL
+     * Taskset.TASK_LIST is same the object as wonTasks
+     */
     public long proposeTask(Task t) {
-        tasks.add(t);
-        VariableSet vs = CPMaker.run(agent.vehicles(), tasks, null);
-        double newCost = vs.getCost();
-        System.out.println(vs);
-        tasks.remove(t);
+        wonTasks.add(t); // always first
 
+        VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
+        proposedVs = CPMaker.run(agent.vehicles(), wonTasks, startPoint);
+        
+        double newCost = proposedVs.getCost();
+        System.out.println(proposedVs);
+        
+        double currentCost = (wonVs != null) ? wonVs.getCost() : 0;
         double bid = Double.max(0, newCost - currentCost);
+
+        wonTasks.remove(t); // always last
         return (long) Math.round(bid);
     }
 
     public VariableSet getVS() {
-        return CPMaker.run(agent.vehicles(), tasks, null);
+        VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
+        System.out.println(vs.getTrueCost());
+        return vs;
     }
-    
 }
