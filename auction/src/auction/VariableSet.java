@@ -38,8 +38,7 @@ public class VariableSet {
         this.travelDistVehicle = new double[numVehicles];
 
         // intialize all the task and tasksteps variables
-        TaskStep.NUM_TASKS = numTasks;
-        TaskStep.TASK_LIST = tasks;
+        TaskStep.setTaskList(tasks);
 
         // save the vehicle list
         vehicleList = vehicles;
@@ -549,8 +548,8 @@ public class VariableSet {
             int t = nextTaskV[v];
             while (t != NULL) {
                 TaskStep tid = TaskStep.fromId(t);
-                String act =  (tid.isPickup) ? "P":"D";
-                s+= TaskStep.getInvolvedCity(t) + " (" + act + tid.id + ") --> ";
+                String act =  (tid.isPickup()) ? "P":"D";
+                s+= TaskStep.getInvolvedCity(t) + " (" + act + tid.getId() + ") --> ";
                 t = nextTaskT[t];
             }
             s+= "NULL";

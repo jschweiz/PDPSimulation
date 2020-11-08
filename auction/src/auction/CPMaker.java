@@ -13,7 +13,7 @@ public class CPMaker {
 
     // Strings
     private static String SUMMARY_STRING = "Run with \t p = %f \t MAX_ITER = %d \t MAX_TIME = %d sec \t DEPTH_SEARCH = %d";
-    private static String SUB_ITERATION_STRING = "Iteration %d Cost : %f";
+    // private static String SUB_ITERATION_STRING = "Iteration %d Cost : %f";
     private static String ITERATION_STRING
             = "************************ ITERATION %d \t vehicles : %d\t Cost : %f ******************************";
 
@@ -181,7 +181,7 @@ public class CPMaker {
                 
                 TaskStep t = A_old.getFirstStepOf(vi);
                 // possible to put the task in the vehicle (in front of all) 
-                if ( t.t.weight < A_old.getVehicleCapacity(vj)) {
+                if ( t.getTask().weight < A_old.getVehicleCapacity(vj)) {
                     VariableSet A = changingVehicle(A_old, vi, vj);
                     N.add(A);
                 }
@@ -194,7 +194,7 @@ public class CPMaker {
                     
                     TaskStep t = TaskStep.fromId(pickId);
                     // possible to put the task in the vehicle (in front of all) 
-                    if ( t.t.weight < A_old.getVehicleCapacity(vj)) {
+                    if ( t.getTask().weight < A_old.getVehicleCapacity(vj)) {
                         VariableSet A = changingVehicle(A_old, vi, vj, pickId);
                         N.add(A);
                     }

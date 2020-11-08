@@ -101,8 +101,8 @@ public class Auction implements AuctionBehavior {
                 for (City c : currentCity.pathTo(destination)) {
                     actions.add(new Action.Move(c));
                 }
-                if (ts.isPickup) actions.add(new Action.Pickup(ts.t));
-                else actions.add(new Action.Delivery(ts.t));
+                if (ts.isPickup()) actions.add(new Action.Pickup(ts.getTask()));
+                else actions.add(new Action.Delivery(ts.getTask()));
 
                 currentCity = destination;
             }
