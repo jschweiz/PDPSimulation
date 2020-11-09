@@ -1,6 +1,7 @@
 package auction;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import logist.agent.Agent;
@@ -16,16 +17,36 @@ public class Bider {
     private List<Task> wonTasks;
     private VariableSet wonVs;
     private VariableSet proposedVs;
+    private int bidNumber;
+
+    private HashMap<Integer, List<Task>> taskOfAgents;
 
     public Bider(Topology topology, TaskDistribution distribution, Agent agent){
 		this.topology = topology;
 		this.distribution = distribution;
         this.agent = agent;
+        this.bidNumber = 0;
         
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        CPMaker.setParameters(-1, 4000, 5, -1, -1);
+        CPMaker.setParameters(-1, 1000, 5, -1, -1);
+    }
+
+    public void auctionResult(Task previous, int winner, Long[] bids) {
+        updateTaskOfAgents(previous, winner, bids.length);
+        if (winner == agent.id()) {
+			addTask(previous);
+        }
+    }
+
+    private void updateTaskOfAgents(Task t, int winner, int numAgents) {
+        if (taskOfAgents == null) {
+            taskOfAgents = new HashMap<Integer, List<Task>>();
+        }
+        if (!taskOfAgents.containsKey(winner))
+            taskOfAgents.put(winner, new ArrayList<Task>());
+        taskOfAgents.get(winner).add(t);
     }
 
     public void addTask(Task t) {
@@ -39,6 +60,8 @@ public class Bider {
      */
     public long proposeTask(Task t) {
         wonTasks.add(t); // always first
+        System.out.println("Bid #" + bidNumber);
+        bidNumber++;
 
         VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
         proposedVs = CPMaker.run(agent.vehicles(), wonTasks, startPoint);
@@ -50,12 +73,16 @@ public class Bider {
         double bid = Double.max(0, newCost - currentCost);
 
         wonTasks.remove(t); // always last
-        return (long) Math.round(bid);
+        return (long) Math.round(bid) + 10;
     }
 
     public VariableSet getVS() {
+        // VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
         VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
-        System.out.println(vs.getTrueCost());
+        System.out.println(vs);
+
+        // VariableSet vsRand = CPMaker.randomShake(vs, 10);
+        // System.out.println("modif \n" + vsRand);
         return vs;
     }
 }

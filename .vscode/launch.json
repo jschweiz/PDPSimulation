@@ -31,6 +31,7 @@
             "name": "auction",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
+            // "args": "auction/config/auction.xml auction-main-67"
             "args": "auction/config/auction_simplified.xml auction-main-67"
         }
     ]

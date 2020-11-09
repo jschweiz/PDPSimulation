@@ -37,7 +37,6 @@ public class Auction implements AuctionBehavior {
     private long timeout_bid;
 
 	// Bid relative variables
-	private List<Task> wonTasks;
 	private Bider bider;
 	
 
@@ -63,16 +62,12 @@ public class Auction implements AuctionBehavior {
 		this.agent = agent;
 
 		// Bid-relative
-		wonTasks = new LinkedList<Task>();
 		bider = new Bider(topology, distribution, agent);
 	}
 
 	@Override
 	public void auctionResult(Task previous, int winner, Long[] bids) {
-		if (winner == agent.id()) {
-			wonTasks.add(previous);
-			bider.addTask(previous);
-		}
+		bider.auctionResult(previous, winner, bids);
 	}
 	
 	@Override

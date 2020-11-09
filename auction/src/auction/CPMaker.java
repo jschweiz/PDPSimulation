@@ -37,6 +37,7 @@ public class CPMaker {
     private static long START_TIME_MILLIS;
     private static int COUNTER = 1;
     private static Set<VariableSet> localMinima = new HashSet<VariableSet>();
+    private static Random rand = new Random();
 
     /**
      * Set the static parameters of the plan maker.
@@ -166,6 +167,53 @@ public class CPMaker {
     }
 
     /**
+     * Performs a random shake of all tasks
+     */
+    public static VariableSet randomShake(VariableSet vs, int steps) {
+        double rd;
+        int vi, vj, tIdX1, tIdX2, length, counter;
+        TaskStep ts;
+
+        for (int i = 0; i < steps; i++) {
+            rd = rand.nextDouble();
+            vi = vs.getRandomAppropriateVehicle();
+            counter = 0;
+            // perform random vehicle change
+            if (rd > 0.5 ) {
+                ts = vs.getFirstStepOf(vi);
+                do {
+                    counter++;
+                    vj = rand.nextInt(vs.getNumberVehicles());
+                } while (vs.getVehicleCapacity(vj) < ts.getTask().weight && counter < 1000);
+                
+                if (counter >= 1000){
+                    System.err.println("Could not randomly shake #1");
+                    continue;
+                }
+                vs = changingVehicle(vs, vi, vj);
+            }
+            // perform random order change
+            else {
+                length = vs.computeNumberOfTaskVehicle(vi);
+                if (length >= 4) {
+                    do {
+                        tIdX1 = rand.nextInt(length-2) + 1;
+                        tIdX2 = tIdX1 + 1 + rand.nextInt(length - tIdX1 -1);
+                    } while(!vs.validChange(tIdX1, tIdX2, vi) && counter < 1000);
+
+                    if (counter >= 1000){
+                        System.err.println("Could not randomly shake #1");
+                        continue;
+                    }
+                    vs = changingTaskOrder(vs, vi, tIdX1, tIdX2);
+                }
+            }
+        }
+
+        return vs;
+    }
+
+    /**
      * 
      * @param A_old Parent VariableSet 
      * @param N List of neighboring states
@@ -247,10 +295,10 @@ public class CPMaker {
         }
 
         // choose neightbor according to proba
-        double rand = new Random().nextDouble();
-        if (rand < takeBestThreshold) {
+        double randDouble = rand.nextDouble();
+        if (randDouble < takeBestThreshold) {
             return bestNeighbor;
-        } else if (rand > 1 - explorationThreshold) {
+        } else if (randDouble > 1 - explorationThreshold) {
             localMinima.add(A_old);
             return getRandom(N);
         } else {
@@ -273,7 +321,7 @@ public class CPMaker {
     }
 
     private static VariableSet getRandom(Set<VariableSet> N) {
-        int randIndex = new Random().nextInt(N.size());
+        int randIndex = rand.nextInt(N.size());
         int count = 0;
         for (VariableSet v : N) {
             if (count == randIndex) {

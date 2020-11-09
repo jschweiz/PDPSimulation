@@ -5,6 +5,10 @@
   - do not know how many tasks will be auctionned
   - do know the tasks distribution --> speculate !
   - do know the winner of all tasks.
+  - 2 vehicles only (see slides, but said otherwise in exercise description)
+
+## Questions
+- How many competitors at max ? --> if not too many, can compute the plan for each competitor
 
 
 ## To do : CPMaker improvements
@@ -22,10 +26,13 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 - [ ] Add a stop condition to `CPMaker` based on score gradient. E.g stop if 1000 iterations with the same score
 
 ### Restart computation based on a randomized solution
-- [ ] Add `randomShake(n)` to take `n` random neighbors and shake the current solution. **Please avoid computing all the neighbors for this step**
+- [X] Add `randomShake(VariableSet vs, int numSteps)` to `CPMaker` to take `n` random neighbors and shake the current solution. **Please avoid computing all the neighbors for this step**
 
 
 ## To do : Bider improvements
 - [ ] How much to bid over the marginal cost ?
 - [ ] How to use knowledge about opponents's tasks ? 
-- [ ] Keep track of opponents' tasks
+- [x] Keep track of opponents' tasks
+
+## To do : Testing
+- [ ] Setup competition

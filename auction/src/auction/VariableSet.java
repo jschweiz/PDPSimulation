@@ -25,6 +25,7 @@ public class VariableSet {
 
     private double[] travelDistVehicle;
     private double cost = Double.MAX_VALUE;
+    private Random rand = new Random();
 
     // construct initial variableSet
 
@@ -463,10 +464,10 @@ public class VariableSet {
      */
     public int getRandomAppropriateVehicle() {
         int n = getNumberVehicles();
-        int chosenVehicle = new Random().nextInt(n);
+        int chosenVehicle = rand.nextInt(n);
         int tries = 0; // only try a finite number of time to avoid infinite loop
         while (this.nextTaskV[chosenVehicle] == NULL) {
-            chosenVehicle = new Random().nextInt(n);
+            chosenVehicle = rand.nextInt(n);
             if (tries > 1000) return -1;
             tries++;
         }
