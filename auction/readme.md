@@ -10,6 +10,10 @@
 ## Questions
 - How many competitors at max ? --> if not too many, can compute the plan for each competitor
 
+## Biding strategy
+- We are in a *reverse auction* mechanism
+- No obvious paper talking about this particular situation --> dig deeper
+
 
 ## To do : CPMaker improvements
 ### Not wasting the previous computations (compute smarter)
@@ -27,6 +31,7 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 
 ### Restart computation based on a randomized solution
 - [X] Add `randomShake(VariableSet vs, int numSteps)` to `CPMaker` to take `n` random neighbors and shake the current solution. **Please avoid computing all the neighbors for this step**
+- [ ] Implement restart
 
 
 ## To do : Bider improvements
@@ -40,3 +45,4 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 **To launch a tournament**:
 - export jar with only the classes of Auction + library (no Centralized, Reactive, ...) and place the `Agents.jar` in `agents/`
 - launch `runTournament` (run/debug tab of vscode)
+
