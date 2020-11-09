@@ -35,4 +35,8 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 - [x] Keep track of opponents' tasks
 
 ## To do : Testing
-- [ ] Setup competition
+- [x] Setup tournament
+  
+**To launch a tournament**:
+- export jar with only the classes of Auction + library (no Centralized, Reactive, ...) and place the `Agents.jar` in `agents/`
+- launch `runTournament` (run/debug tab of vscode)

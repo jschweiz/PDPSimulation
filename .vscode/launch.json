@@ -33,6 +33,24 @@
             "mainClass": "logist.LogistPlatform",
             // "args": "auction/config/auction.xml auction-main-67"
             "args": "auction/config/auction_simplified.xml auction-main-67"
+        },
+
+        // {
+        //     "type": "java",
+        //     "name": "newTournament",
+        //     "request": "launch",
+        //     "mainClass": "logist.LogistPlatform",
+        //     "args": "-new auctionTournament agents"
+        // },
+
+        {
+            "type": "java",
+            "name": "RunTournament",
+            "request": "launch",
+            "mainClass": "logist.LogistPlatform",
+            "args": "-run auctionTournament auction/config/auction_simplified.xml"
         }
+
+
     ]
 }
