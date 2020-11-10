@@ -37,7 +37,7 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 ## To do : Bider improvements
 - [ ] How much to bid over the marginal cost ?
 - [ ] How to use knowledge about opponents's tasks ? 
-- [x] Keep track of opponents' tasks
+- [x] Keep track of opponents' tasks and bids
 
 ## To do : Testing
 - [x] Setup tournament

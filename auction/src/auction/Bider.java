@@ -19,21 +19,25 @@ public class Bider {
     private VariableSet proposedVs;
     private int bidNumber;
 
-    private HashMap<Integer, List<Task>> taskOfAgents;
+    private HashMap<Integer, List<Task>> tasksOfAgents;
+    private List<Long[]> bidsOfAgents;
 
     public Bider(Topology topology, TaskDistribution distribution, Agent agent){
 		this.topology = topology;
 		this.distribution = distribution;
         this.agent = agent;
         this.bidNumber = 0;
+        this.bidsOfAgents = new ArrayList<Long[]>();
+        this.tasksOfAgents = new HashMap<Integer, List<Task>>();
         
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        CPMaker.setParameters(-1, 1000, 5, -1, -1);
+        CPMaker.setParameters(-1, 2000, 5, -1, -1);
     }
 
     public void auctionResult(Task previous, int winner, Long[] bids) {
+        bidsOfAgents.add(bids);
         updateTaskOfAgents(previous, winner, bids.length);
         if (winner == agent.id()) {
 			addTask(previous);
@@ -41,12 +45,9 @@ public class Bider {
     }
 
     private void updateTaskOfAgents(Task t, int winner, int numAgents) {
-        if (taskOfAgents == null) {
-            taskOfAgents = new HashMap<Integer, List<Task>>();
-        }
-        if (!taskOfAgents.containsKey(winner))
-            taskOfAgents.put(winner, new ArrayList<Task>());
-        taskOfAgents.get(winner).add(t);
+        if (!tasksOfAgents.containsKey(winner))
+            tasksOfAgents.put(winner, new ArrayList<Task>());
+        tasksOfAgents.get(winner).add(t);
     }
 
     public void addTask(Task t) {
