@@ -5,7 +5,8 @@
   - do not know how many tasks will be auctionned
   - do know the tasks distribution --> speculate !
   - do know the winner of all tasks.
-  - 2 vehicles only (see slides, but said otherwise in exercise description)
+  - **2 vehicles only**
+  - **Always 1 vs 1**
 
 ## Questions
 - How many competitors at max ? --> if not too many, can compute the plan for each competitor
