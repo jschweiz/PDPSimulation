@@ -30,14 +30,14 @@ public class CPMaker {
     private static double TAKE_BEST_THRESHOLD = 0.4;
     private static double TAKE_BEST_VARIABILITY = 0.35;
     private static double EXPLORE_THRESHOLD_DEFAULT = 0;
-    private static double EXPLORE_THRESHOLD_STABLE = 0.005;
-    private static double EXPLORE_THRESHOLD_BOTTOM = 0.01;
+    private static double EXPLORE_THRESHOLD_STABLE =  0.05;//0.005;
+    private static double EXPLORE_THRESHOLD_BOTTOM = 0.1;//0.01;
 
     // object variables
     private static long START_TIME_MILLIS;
     private static int COUNTER = 1;
     private static Set<VariableSet> localMinima = new HashSet<VariableSet>();
-    private static Random rand = new Random();
+    public static Random rand = new Random();
 
     /**
      * Set the static parameters of the plan maker.

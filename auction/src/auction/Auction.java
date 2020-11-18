@@ -78,7 +78,7 @@ public class Auction implements AuctionBehavior {
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		VariableSet finalState = bider.getVS();
+		VariableSet finalState = bider.getVariableSet();
 		List<Plan> plans = convertVariableSet(vehicles, finalState);
 		return plans;
 	}
