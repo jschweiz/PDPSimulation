@@ -47,21 +47,21 @@
             "name": "CreateTournament",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "-new auctionTournament agents"
+            "args": "-new tournamentIntellect agents"
         },
         {
             "type": "java",
             "name": "RunTournament",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "-run auctionTournament auction/config/auction_simplified.xml"
+            "args": "-run tournamentIntellect auction/config/auction_simplified.xml"
         },
         {
             "type": "java",
             "name": "ScoreTournament",
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
-            "args": "-score auctionTournament [result.txt]"
+            "args": "-score tournamentIntellect [result.txt]"
         }
 
 

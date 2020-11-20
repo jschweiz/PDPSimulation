@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import common.TaskStep;
+import common.VariableSet;
 import logist.LogistSettings;
 import logist.Measures;
 import logist.behavior.AuctionBehavior;
@@ -78,13 +80,14 @@ public class Auction implements AuctionBehavior {
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
+		bider.writeToFile();
 		VariableSet finalState = bider.getVariableSet();
 		List<Plan> plans = convertVariableSet(vehicles, finalState);
 		return plans;
 	}
 
 	public List<Plan> convertVariableSet(List<Vehicle> vehicles, VariableSet vs) {
-        List<Plan> plans = new ArrayList<Plan>();
+		List<Plan> plans = new ArrayList<Plan>();
 
         for (int i = 0; i < vehicles.size(); i++) {
             List<TaskStep> executedTaskStep = vs.getTaskStepVehicle(i);

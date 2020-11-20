@@ -14,5 +14,10 @@
 		<set class-name="auction.Auction"/>
 	</agent>
 
-	
+	<agent name="auction-basic">
+		<set class-path="auction/bin/"/>
+		<set class-name="auctionBasic.Auction"/>
+	</agent>
+
+
 </agents>

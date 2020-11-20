@@ -1,12 +1,18 @@
 package auction;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.channels.WritePendingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
+import common.CPMaker;
+import common.VariableSet;
 import logist.agent.Agent;
 import logist.simulation.Vehicle;
 import logist.task.Task;
@@ -24,40 +30,129 @@ public class Bider {
     private VariableSet proposedVs;
     private int bidNumber;
 
-    private HashMap<Integer, List<Task>> tasksOfAgents;
+
+    // history to plot 
+    private List<Long> totalBenefList;
+    private List<Long> marginalCostList;
+    private List<Long> costList;
+    private List<Long> totalGainList;
     private List<Long[]> bidsOfAgents;
+    private HashMap<Integer, List<Task>> tasksOfAgents;
 
     // risk measure
     private double[] probaToGoTo;
     private double[][] isThisValuable;
 
     // strategy
-    private int moneyFromTasks = 0;
+    private int currentRevenuFromTasks = 0;
 
     public Bider(Topology topology, TaskDistribution distribution, Agent agent){
+        // initialize basic variables
 		this.topology = topology;
 		this.distribution = distribution;
         this.agent = agent;
+
+
+        // initialize bidding tournament
         this.bidNumber = 0;
-        this.bidsOfAgents = new ArrayList<Long[]>();
-        this.tasksOfAgents = new HashMap<Integer, List<Task>>();
-        
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        CPMaker.setParameters(-1, 1000, 5, -1, -1);
-        
+        CPMaker.setParameters(-1, 10000, 5, -1, -1);
 
+
+        // initialize risk calculation
         int numCities = topology.cities().size();
         this.probaToGoTo = new double[numCities];
         this.isThisValuable = new double[numCities][numCities];
-        this.setRiskProbabilities(topology, distribution);
+        this.setRiskProbabilities();
 
-        this.moneyFromTasks = 0;
+
+        this.currentRevenuFromTasks = 0;
+        // initalize histories of all bids / strategy choices
+        this.totalBenefList = new ArrayList<>();
+        this.marginalCostList = new ArrayList<>();
+        this.costList = new ArrayList<>();
+        this.totalGainList = new ArrayList<>();
+        this.bidsOfAgents = new ArrayList<>();
+        this.tasksOfAgents = new HashMap<>();
     }
 
-    
-    public double calculateFactor(double p, double t, double M, double m, double x) {
+
+    // compute the strategy
+
+    public long proposeTask(Task t) {
+        wonTasks.add(t); // always first
+        System.out.println("Bid #" + bidNumber + " with task " + t);
+        bidNumber++;
+
+        long currentRevenu = wonVs == null ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
+        System.out.println("Current total profit is : " + currentRevenu);
+
+        // compute optiomal plan of previous plan plus the new task
+        VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
+        proposedVs = CPMaker.run(agent.vehicles(), wonTasks, startPoint );
+        
+        // compute marginal cost
+        double lastStepCost = (wonVs != null) ? wonVs.getCost() : 0;
+        double newPlanCost = proposedVs.getCost();
+        double marginalCost = newPlanCost - lastStepCost;
+        System.out.println( "Marginal price is : " + marginalCost);
+
+        // calcul final bid
+        long bid = computePriceWithStrategy(marginalCost, newPlanCost, t);
+        System.out.println("Final bid is : " + bid);
+
+        // note for history
+        totalBenefList.add(currentRevenu);
+        marginalCostList.add((long) marginalCost);
+        
+        wonTasks.remove(t); // always last
+        return bid;
+    }
+
+
+    public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
+
+        double m = 0.5;
+        double x = 0.65;
+        double M = 0.9;
+        double ti = 0.4;
+        long minPrice = 300;
+
+        // adapt factors to the time-beeing
+        if (bidsOfAgents.size() > 5) {
+            m += 0.5;
+            x +=  0.45;
+            M +=  0.4;
+            ti -= 0.1;
+            minPrice = 500;
+        }
+
+         // compute risk adversion
+         double qualityOfInvestment = measureRisk(t);
+         double marginalMultiplicationFactor = computeRiskFactor(qualityOfInvestment, ti, M, m, x);
+ 
+        // compute adapted marginal cost
+        long marginalAdaptedPrice =  (long) (Double.max(0, marginalCost) * marginalMultiplicationFactor);
+
+        // compute minimal price
+        long minimalBidPrice = (long) (minPrice * Math.pow(marginalMultiplicationFactor, 2));
+
+        // final bid
+        long bid = Long.max(minimalBidPrice, marginalAdaptedPrice);
+        String s = "risk-proba: %d , marg-factor: %f, marg-adapted-price: %d, min-price: %d, bid-price: %d";
+        System.out.println(String.format(s,
+            (int)(qualityOfInvestment*100),
+            marginalMultiplicationFactor,
+            marginalAdaptedPrice,
+            minimalBidPrice,
+            bid));
+ 
+        return bid;
+    }
+
+    public double computeRiskFactor(double p, double t, double M, double m, double x) {
         double factor;
         if (p < t) {
             factor = M - (M - x) / t * p;
@@ -68,170 +163,35 @@ public class Bider {
     }
 
 
-    /**
-     * ESSENTIAL
-     * Taskset.TASK_LIST is same the object as wonTasks
-     */
-    private class Computation {
-        VariableSet v;
-        List<Task> t;
-        List<Vehicle> ve;
-        VariableSet r;
-        public Computation(VariableSet v, List<Task> t, List<Vehicle> ve) {
-            this.v = v;
-            this.t = t;
-            this.ve = ve;
-            this.r = null;
-        }
-        public Computation copy() {
-            VariableSet vi = v == null ? null : v.copy();
-            List<Task> ti = null;
-            if (t != null) {
-                ti = new LinkedList<>();
-                ti.addAll(t);
-            }
-            List<Vehicle> vei = new LinkedList<>();
-            vei.addAll(ve);
-            return new Computation(vi, ti, vei);
-        }
-        
-    }
-
-    public void getResult(Computation c) {
-        c.r = CPMaker.run(c.ve, c.t, c.v);
-    }
-
-
-    public long proposeTask(Task t) {
-        wonTasks.add(t); // always first
-        System.out.println("Bid #" + bidNumber + " with task " + t);
-        bidNumber++;
-
-        
-        long benef = 0;
-        double m = 0.5;
-        double x = 0.8;
-        double M = 0.9;
-        double ti = 0.7;
-        if (bidsOfAgents.size() > 4) {
-            m += 0.2;
-            x +=  0.2;
-            M +=  0.2;
-            ti -= 0.1;
-        }
-
-
-        if (wonVs != null) {
-            benef = (long) (this.moneyFromTasks - wonVs.getCost());
-            System.out.println("Currently, the total benef is :" + benef);
-        }
-
-
-        // current situation
-        VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
-
-
-
-        // create the computations
-        int numThreads = 1;
-        List<Computation> comp = new LinkedList<Bider.Computation>();
-        comp.add(new Computation(startPoint, wonTasks, agent.vehicles()));
-        for (int i = 1; i < numThreads; i++) {
-            comp.add(comp.get(0).copy());
-        }
-
-        // compute them
-        comp.stream()
-            .parallel()
-            .forEach((e) -> this.getResult(e));
-
-        List<Double> costsFound = new LinkedList<>();
-        double min = Double.MAX_VALUE;
-        Computation minC = null;
-        for (Computation c : comp) {
-            double val = c.r.getCost();
-            costsFound.add(val);
-            if (val < min) {
-                min = val;
-                minC = c;
-            }
-        }
-        proposedVs = minC.r;
-
-        
-        double currentCost = (wonVs != null) ? wonVs.getCost() : 0;
-        double newCost = proposedVs.getCost();
-        double marginalCost = newCost - currentCost;
-        
-        System.out.println( "Marginal price: " + marginalCost); // proposedVs +
-
-
-
-        double qualityOfInvestment = isGoodInvestment(t);
-        double factor = calculateFactor(qualityOfInvestment, ti, M, m, x);
-
-
-
-        // compute bid based on strategy
-        double minPrice = 500;
-        minPrice *= Math.pow(factor, 3);
-
-
-        double proposedPrice = Math.round(Double.max(0, marginalCost));
-        proposedPrice *= factor;
-
-
-
-        // calcul final bid
-        long bid = (long) Double.max(minPrice, proposedPrice);
-
-        System.out.println("Wanted task ? " + (int)(qualityOfInvestment*100) + "%");
-        System.out.println("Factor: " + factor);
-        System.out.println("Proposed price: " + proposedPrice);
-        System.out.println("Minprice price: " + minPrice);
-        System.out.println("Bid price: " + bid);
-
-        
-        wonTasks.remove(t); // always last
-        return bid;
-    }
-
-
-
-
-
-    public VariableSet getVariableSet() {
-        // VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
-        VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
-        System.out.println(vs);
-
-        // VariableSet vsRand = CPMaker.randomShake(vs, 10);
-        // System.out.println("modif \n" + vsRand);
-        return vs;
-    }
-
 
     // function to handle bid steps
-    
-    public void auctionResult(Task previous, int winner, Long[] bids) {
-        bidsOfAgents.add(bids);
-        updateTaskOfAgents(previous, winner, bids.length);
-        if (winner == agent.id()) {
-            addTask(previous);
-            this.moneyFromTasks += bids[this.agent.id()];
+
+    public void auctionResult(Task previousTask, int winner, Long[] bids) {
+        updateTaskOfAgents(previousTask, winner); // add the task to the winner set
+
+        boolean taskWon = winner == agent.id();
+        if (taskWon) { // if we won
+            updateOurPlan(previousTask);
             System.out.println("GOT THE BID\n\n");
         } else {
             System.out.println("DID NOT GET THE BID\n\n");
         }
+
+        // save history
+        this.bidsOfAgents.add(bids); // note for history
+        this.currentRevenuFromTasks += taskWon ? bids[this.agent.id()] : 0;
+        this.totalGainList.add((long) this.currentRevenuFromTasks);
+        this.costList.add( this.wonVs != null ? (long) this.wonVs.getCost() : 0);
     }
 
-    private void updateTaskOfAgents(Task t, int winner, int numAgents) {
+
+    private void updateTaskOfAgents(Task t, int winner) {
         if (!tasksOfAgents.containsKey(winner))
             tasksOfAgents.put(winner, new ArrayList<Task>());
         tasksOfAgents.get(winner).add(t);
     }
 
-    public void addTask(Task t) {
+    private void updateOurPlan(Task t) {
         wonVs = proposedVs;
         wonTasks.add(t);
     }
@@ -239,17 +199,13 @@ public class Bider {
 
     // risk analyze
     
-    private void setRiskProbabilities(Topology topo, TaskDistribution td) {
-        // initialize
-        for (City from : topo.cities()) {
-            this.probaToGoTo[from.id] = 0;
-            for (City to : topo.cities()) this.isThisValuable[from.id][to.id] = 0;
-        }
+    private void setRiskProbabilities(){
+        initializeRisk();
 
         // proba to go through a city
-        for (City from : topo.cities()) {
-            for (City to : topo.cities()) {
-                double proba = td.probability(from, to);
+        for (City from : this.topology.cities()) {
+            for (City to : this.topology.cities()) {
+                double proba = this.distribution.probability(from, to);
                 // System.out.println(from.pathTo(to).size());
                 List<City> path = from.pathTo(to);
                 this.probaToGoTo[from.id] += proba;
@@ -257,23 +213,30 @@ public class Bider {
             }
         }
 
-        for (City from : topo.cities()) {
-            for (City to : topo.cities()) {
+        for (City from : this.topology.cities()) {
+            for (City to : this.topology.cities()) {
                 for (City c : from.pathTo(to)) this.isThisValuable[from.id][to.id] += this.probaToGoTo[c.id];
             }
         }
 
         // find min and max for nomalization
-        normalize(isThisValuable);
+        normalizeRisk();
     }
 
-    private void normalize(double[][] isThisValuable) {
+    private void initializeRisk() {
+        for (City from : this.topology.cities()) {
+            this.probaToGoTo[from.id] = 0;
+            for (City to : this.topology.cities()) this.isThisValuable[from.id][to.id] = 0;
+        }
+    }
+
+    private void normalizeRisk() {
         double minValue = Double.MAX_VALUE;
         double maxValue = Double.MIN_VALUE;
         double val;
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
-                val = isThisValuable[from.id][to.id];
+                val = this.isThisValuable[from.id][to.id];
                 if (val < minValue && val != 0) minValue = val;
                 if (val > maxValue) maxValue = val;
             }
@@ -282,14 +245,46 @@ public class Bider {
         // normalize
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
-                if (isThisValuable[from.id][to.id] != 0) {
-                    isThisValuable[from.id][to.id] =  (isThisValuable[from.id][to.id] - minValue)/(maxValue - minValue);
+                if (this.isThisValuable[from.id][to.id] != 0) {
+                    this.isThisValuable[from.id][to.id] =  (this.isThisValuable[from.id][to.id] - minValue)/(maxValue - minValue);
                 }
             }
         }
     }
 
-    private double isGoodInvestment(Task t) {
+    private double measureRisk(Task t) {
         return this.isThisValuable[t.pickupCity.id][t.deliveryCity.id];
+    }
+
+
+    // function to return the final plan
+    public VariableSet getVariableSet() {
+        // VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
+        VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
+        System.out.println(vs);
+        // VariableSet vsRand = CPMaker.randomShake(vs, 10);
+        // System.out.println("modif \n" + vsRand);
+        return vs;
+    }
+
+    // function to write in order to plot
+    public void writeToFile() {
+        try {
+            FileWriter myWriter = new FileWriter("result_investor_" + (new Random()).nextInt(1000) + ".txt");
+            myWriter.write("taskid,bidAgent1,bidAgent2,totalBenef,margCost,totalCost,totalRevenu\n");
+            for (int i = 0; i < totalBenefList.size(); i++) {
+                long v1 = bidsOfAgents.get(i)[this.agent.id()];
+                long v2 = bidsOfAgents.get(i).length > 1 ? bidsOfAgents.get(i)[1-this.agent.id()] : 0;
+                myWriter.write(i + "," + v1 + "," + v2 + ","
+                        + this.totalBenefList.get(i) + ","
+                        + this.marginalCostList.get(i) + ','
+                        + this.costList.get(i) + ","
+                        + this.totalGainList.get(i) + "\n");
+            }
+            myWriter.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 }
