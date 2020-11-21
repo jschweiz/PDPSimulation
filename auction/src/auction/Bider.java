@@ -40,6 +40,7 @@ public class Bider {
 
     // strategy
     private int currentRevenuFromTasks = 0;
+    private int minBidToGetBackPositive;
 
     public Bider(Topology topology, TaskDistribution distribution, Agent agent){
         // initialize basic variables
@@ -115,16 +116,31 @@ public class Bider {
 
 
     public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
+        int changeStratTask = 5;
 
-        double m = 0.5;
+        double m = 0.6;
         double x = 0.65;
         double M = 0.9;
-        double ti = 0.4;
+        double ti = 0.6;
         long minPrice = 300;
 
         // adapt factors to the time-beeing
-        if (bidsOfAgents.size() > 5) {
-            m += 0.5;
+        long benefits = (wonVs == null) ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
+
+        if (wonTasks.size() == changeStratTask) {
+            minBidToGetBackPositive = (int)Math.abs(benefits / changeStratTask);
+        }
+
+        if (wonTasks.size() > changeStratTask && benefits < 0 ) {
+            m += 0.45;
+            x +=  0.45;
+            M +=  0.4;
+            ti -= 0.1;
+            minPrice = minBidToGetBackPositive;
+        }
+
+        if (wonTasks.size() > changeStratTask && benefits >= 0 ) {
+            m += 0.45;
             x +=  0.45;
             M +=  0.4;
             ti -= 0.1;
