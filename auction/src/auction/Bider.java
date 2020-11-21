@@ -118,7 +118,7 @@ public class Bider {
     public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
         int changeStratTask = 4;
 
-        double m = 0.6;
+        double m = 0.7;
         double x = 0.65;
         double M = 1;
         double ti = 0.6;
@@ -132,7 +132,7 @@ public class Bider {
         }
 
         if (wonTasks.size() > changeStratTask && benefits < 0 ) {
-            m = 0.95;
+            m = 0.98;
             x =  1.1;
             M =  1.3;
             ti = 0.5;
