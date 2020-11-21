@@ -159,7 +159,7 @@ public class Bider {
         if (p < t) {
             factor = M - (M - x) / t * p;
         } else {
-            factor = x + (x - m) / (x - t) * (t - p);
+            factor = x + (x - m) / (1 - t) * (t - p);
         }
         return factor;
     }
