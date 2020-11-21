@@ -21,6 +21,9 @@
 Idea : when proposing a task, start computing the optimal plan starting by the previous plan found + the new proposed task. Goal : reduce computing time
 - [x] Add possibility to run `CPMaker` starting from a given VariableSet. 
 - [x] Implement `~addTask` to `VariableSet` : strategically place the new task in the former plan found, and search from this configuration (hopefully reduces greatly the number of iterations)
+- [x] Implement `removeLastTask` : if the plan computed with a new task has a cost < the plan before adding the task, then just remove the new task and update the winningPlan. (Benefit if we do not win the auction)
+
+
 
 **Conclusion** : 
 - with 20 tasks, 2000 iterations, 2 vehicles : the "compute from scratch" method and the "compute smarter" method yields the same score *in average*
@@ -36,7 +39,7 @@ Idea : when proposing a task, start computing the optimal plan starting by the p
 
 
 ## To do : Bider improvements
-- [ ] How much to bid over the marginal cost ?
+- [x] How much to bid over the marginal cost ?
 - [ ] How to use knowledge about opponents's tasks ? 
 - [x] Keep track of opponents' tasks and bids
 
