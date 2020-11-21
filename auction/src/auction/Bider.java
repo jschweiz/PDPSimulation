@@ -120,7 +120,7 @@ public class Bider {
 
         double m = 0.6;
         double x = 0.65;
-        double M = 0.9;
+        double M = 1;
         double ti = 0.6;
         long minPrice = 300;
 
@@ -132,10 +132,10 @@ public class Bider {
         }
 
         if (wonTasks.size() > changeStratTask && benefits < 0 ) {
-            m += 0.45;
-            x +=  0.45;
-            M +=  0.4;
-            ti -= 0.1;
+            m = 1.05;
+            x =  1.1;
+            M =  1.3;
+            ti = 0.5;
             minPrice = minBidToGetBackPositive;
         }
 
