@@ -7,8 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import common.CPMaker;
 import common.TaskStep;
 import common.VariableSet;
+import logist.LogistPlatform;
 import logist.LogistSettings;
 import logist.Measures;
 import logist.behavior.AuctionBehavior;
@@ -54,9 +56,11 @@ public class Auction implements AuctionBehavior {
         catch (Exception exc) {
             System.out.println("There was a problem loading the configuration file.");
         }
-        timeout_setup = ls.get(LogistSettings.TimeoutKey.SETUP);
-        timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
-        timeout_bid = ls.get(LogistSettings.TimeoutKey.BID);
+        
+        timeout_setup = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.SETUP);
+        timeout_plan = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.PLAN);
+		timeout_bid = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.BID);
+        CPMaker.setParameters(-1, 10000, timeout_bid - 400, -1, -1);
 
 		// Save parameters
 		this.topology = topology;

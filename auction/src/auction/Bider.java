@@ -1,20 +1,15 @@
 package auction;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.channels.WritePendingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 import common.CPMaker;
 import common.VariableSet;
 import logist.agent.Agent;
-import logist.simulation.Vehicle;
 import logist.task.Task;
 import logist.task.TaskDistribution;
 import logist.topology.Topology;
@@ -58,7 +53,7 @@ public class Bider {
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        CPMaker.setParameters(-1, 10000, 5, -1, -1);
+        
 
 
         // initialize risk calculation

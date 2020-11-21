@@ -21,7 +21,7 @@ public class CPMaker {
     // general parameters for model
     private static double P = 0.3;
     private static int MAX_ITERATIONS = 4000;
-    private static long MAX_TIME_SEC = 30;
+    private static long MAX_TIME_MS = 30000;
     private static long DEPTH_SEARCH = 8;
     public static int DEBUG = 0;
     private static boolean BETA = false;
@@ -50,13 +50,13 @@ public class CPMaker {
      * @param debug      This is the LOG level (-1, 0 and 1) to choose how much is printed
      * @return Nothing
      */
-    public static void setParameters(double p, int maxIter, long maxTimeSec, int depthSearch, int debug) {
+    public static void setParameters(double p, int maxIter, long maxTimeMs, int depthSearch, int debug) {
         if (p >= 0) P = p;
         if (maxIter > 0) MAX_ITERATIONS = maxIter;
-        if (maxTimeSec > 0) MAX_TIME_SEC = maxTimeSec;
+        if (maxTimeMs > 0) MAX_TIME_MS = maxTimeMs;
         if (depthSearch > 0) DEPTH_SEARCH = depthSearch;
         if (debug >= 0 && debug <= 2) DEBUG = debug;
-        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_SEC, DEPTH_SEARCH));
+        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_MS, DEPTH_SEARCH));
     }
 
     public static void initialize() {
@@ -116,8 +116,8 @@ public class CPMaker {
             return true;
 
         // Condition on time
-        long elapsedTimeSec = (System.currentTimeMillis() - START_TIME_MILLIS) / 1000;
-        if (elapsedTimeSec > MAX_TIME_SEC) 
+        long elapsedTimeMs = (System.currentTimeMillis() - START_TIME_MILLIS);
+        if (elapsedTimeMs > MAX_TIME_MS) 
             return true;
 
         return false;

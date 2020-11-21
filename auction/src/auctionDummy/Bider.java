@@ -38,7 +38,6 @@ public class Bider {
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        CPMaker.setParameters(-1, 1000, 5, -1, -1);
     }
 
     public long proposeTask(Task t) {
