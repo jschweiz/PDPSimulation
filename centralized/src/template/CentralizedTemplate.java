@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import logist.LogistPlatform;
 import logist.LogistSettings;
 
 import logist.Measures;
@@ -35,7 +36,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
     // general parameters for model
     public static final int DEBUG = 0;
     public static final double P = 0.3;
-    public static final int MAX_ITERATIONS = 5000;
+    public static final int MAX_ITERATIONS = 50000;
     public static final int DEPTH_SEARCH = 8;
 
     private Topology topology;
@@ -58,9 +59,11 @@ public class CentralizedTemplate implements CentralizedBehavior {
         }
         
         // the setup method cannot last more than timeout_setup milliseconds
-        timeout_setup = ls.get(LogistSettings.TimeoutKey.SETUP);
+        timeout_setup = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.SETUP);
+        System.out.println("SETUP TIMEOUT : " + timeout_setup);
         // the plan method cannot execute more than timeout_plan milliseconds
-        timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
+        timeout_plan = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.PLAN);
+        System.out.println("PLAN TIMEOUT : " + timeout_plan);
         
         this.topology = topology;
         this.distribution = distribution;
@@ -78,8 +81,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
             taskList.add(t);
 
         System.out.println("Starting computing best plan...");
-
-        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan / 1000 - 1, DEBUG); // take 1 sec of margin
+        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan - 2000, DEBUG); // take 1 sec of margin
         VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
 
         long time_stop = System.currentTimeMillis();

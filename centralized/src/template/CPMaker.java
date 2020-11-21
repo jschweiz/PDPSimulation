@@ -20,7 +20,7 @@ public class CPMaker {
     // General parameters
     private static double P = 0.4;
     private static int MAX_ITERATIONS = 2000;
-    private static long MAX_TIME_SEC = 30;
+    private static long MAX_TIME_MS = 30000;
     private static int DEBUG = 0;
     private static boolean BETA = false;
 
@@ -42,17 +42,17 @@ public class CPMaker {
      * @param p          This is the probability to choose the best neighbour
      * @param maxIter    This is the max number of iterations after which the plan
      *                   maker returns
-     * @param maxTimeSec This is the max number of seconds after which the plan
+     * @param maxTimeMs This is the max number of seconds after which the plan
      *                   maker returns
      * @param debug      This is the LOG level (-1, 0 and 1) to choose how much is printed
      * @return Nothing
      */
-    public static void setParameters(double p, int maxIter, Long maxTimeSec, int debug) {
+    public static void setParameters(double p, int maxIter, Long maxTimeMs, int debug) {
         if (p >= 0) P = p;
         if (maxIter > 0) MAX_ITERATIONS = maxIter;
-        if (maxTimeSec > 0) MAX_TIME_SEC = maxTimeSec;
+        if (maxTimeMs > 0) MAX_TIME_MS = maxTimeMs;
         if (debug >= 0 && debug <= 2) DEBUG = debug;
-        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_SEC));
+        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_MS));
     }
 
     /**
@@ -92,9 +92,13 @@ public class CPMaker {
             return true;
 
         // Condition on time
-        long elapsedTimeSec = (System.currentTimeMillis() - START_TIME_MILLIS) / 1000;
-        if (elapsedTimeSec > MAX_TIME_SEC) 
+        long elapsedTimeSec = (System.currentTimeMillis() - START_TIME_MILLIS);
+        if(COUNTER %100 == 0)
+            System.out.println("" + elapsedTimeSec + " s   " + MAX_TIME_MS);
+        if (elapsedTimeSec > MAX_TIME_MS) {
+            System.out.println("Done");
             return true;
+        }
 
         return false;
     }
