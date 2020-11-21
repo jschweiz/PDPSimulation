@@ -82,7 +82,7 @@ public class Bider {
         bidNumber++;
 
         long currentRevenu = wonVs == null ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
-        System.out.println("Current total profit is : " + currentRevenu);
+        // System.out.println("Current total profit is : " + currentRevenu);
 
         // compute optiomal plan of previous plan plus the new task
         VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
@@ -92,11 +92,18 @@ public class Bider {
         double lastStepCost = (wonVs != null) ? wonVs.getCost() : 0;
         double newPlanCost = proposedVs.getCost();
         double marginalCost = newPlanCost - lastStepCost;
-        System.out.println( "Marginal price is : " + marginalCost);
+        // System.out.println( "Marginal price is : " + marginalCost);
+
+        // Check if new plan's cost < old plan's cost
+        if(marginalCost < 0) {
+            System.out.println("WonVS before proposed Task added: " + wonVs.getCost());
+            wonVs = proposedVs.copyMinusLastTask();
+            System.out.println("WonVS after proposed task removed: " + wonVs.getCost());
+        }
 
         // calcul final bid
         long bid = computePriceWithStrategy(marginalCost, newPlanCost, t);
-        System.out.println("Final bid is : " + bid);
+        // System.out.println("Final bid is : " + bid);
 
         // note for history
         totalBenefList.add(currentRevenu);
@@ -136,13 +143,13 @@ public class Bider {
 
         // final bid
         long bid = Long.max(minimalBidPrice, marginalAdaptedPrice);
-        String s = "risk-proba: %d , marg-factor: %f, marg-adapted-price: %d, min-price: %d, bid-price: %d";
-        System.out.println(String.format(s,
-            (int)(qualityOfInvestment*100),
-            marginalMultiplicationFactor,
-            marginalAdaptedPrice,
-            minimalBidPrice,
-            bid));
+        // String s = "risk-proba: %d , marg-factor: %f, marg-adapted-price: %d, min-price: %d, bid-price: %d";
+        // System.out.println(String.format(s,
+        //     (int)(qualityOfInvestment*100),
+        //     marginalMultiplicationFactor,
+        //     marginalAdaptedPrice,
+        //     minimalBidPrice,
+        //     bid));
  
         return bid;
     }
@@ -167,7 +174,7 @@ public class Bider {
         boolean taskWon = winner == agent.id();
         if (taskWon) { // if we won
             updateOurPlan(previousTask);
-            System.out.println("GOT THE BID\n\n");
+            // System.out.println("GOT THE BID\n\n");
         } else {
             System.out.println("DID NOT GET THE BID\n\n");
         }
@@ -254,11 +261,12 @@ public class Bider {
 
     // function to return the final plan
     public VariableSet getVariableSet() {
-        // VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
-        VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
+        VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
+        System.out.println("From SCRATCH : " + vs.getCost());
+        System.out.println("WonVS : " + wonVs.getCost());
+        vs = CPMaker.run(agent.vehicles(), null, wonVs);
+        System.out.println("WonVS with recompute : " + vs.getCost());
         System.out.println(vs);
-        // VariableSet vsRand = CPMaker.randomShake(vs, 10);
-        // System.out.println("modif \n" + vsRand);
         return vs;
     }
 

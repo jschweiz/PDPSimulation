@@ -572,8 +572,7 @@ public class VariableSet {
 
         for (int i = 0; i < numTasks * 2; i++) {
             newNextTaskT[i] = nextTaskT[i];
-            newNextTaskT[i] = nextTaskT[i];
-            newVehicle[i] = nextTaskT[i];
+            newVehicle[i] = vehicle[i];
         }
 
         // add task to taskStep
@@ -601,6 +600,41 @@ public class VariableSet {
         newNextTaskV[v] = pickup;
         newVehicle[pickup] = v;
         newVehicle[delivery] = v;
+
+        return new VariableSet(v, numVehicles, newNumTasks, newNextTaskT, newNextTaskV, 
+        newTime, newVehicle, newTravelDistVehicle, cost);
+    }
+
+    
+    public VariableSet copyMinusLastTask() {
+        // Clone and initialize variables
+        int newNumTasks = numTasks - 1;
+        int[] newNextTaskV = nextTaskV.clone();
+        double[] newTravelDistVehicle = travelDistVehicle.clone();
+        int[] newNextTaskT = new int[newNumTasks * 2];
+        int[] newTime = new int[newNumTasks * 2];
+        int[] newVehicle = new int[newNumTasks * 2];
+
+        int rid = TaskStep.getListTaskSize() - 1;
+        int pickupId = TaskStep.getMapId(rid, true);
+        int deliverId = TaskStep.getMapId(rid, false);    
+        
+        int v = vehicle[pickupId]; // vehicle holding the task
+
+        for (int i = 0; i < newNumTasks * 2; i++) {
+            if (nextTaskT[i] == pickupId) {
+                if (nextTaskT[nextTaskT[i]] == deliverId)
+                    newNextTaskT[i] = nextTaskT[nextTaskT[nextTaskT[i]]];
+                else    
+                    newNextTaskT[i] = nextTaskT[nextTaskT[i]];
+            }
+            else if (nextTaskT[i] == deliverId) 
+                newNextTaskT[i] = nextTaskT[nextTaskT[i]];
+            else
+                newNextTaskT[i] = nextTaskT[i];
+
+            newVehicle[i] = vehicle[i];
+        }
 
         return new VariableSet(v, numVehicles, newNumTasks, newNextTaskT, newNextTaskV, 
         newTime, newVehicle, newTravelDistVehicle, cost);

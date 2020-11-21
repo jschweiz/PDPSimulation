@@ -52,6 +52,9 @@ public class TaskStep {
     public static void setTaskList(List<Task> taskList) {
         TASK_LIST = taskList;
     }
+    public static int getListTaskSize() {
+        return TASK_LIST.size();
+    }
     
 
     public static TaskStep fromId(int id) {
@@ -78,6 +81,16 @@ public class TaskStep {
     }
     public static int getRealTaskId(int id) {
         return id/2;
+    }
+    public static int getRealTaskId(Task t) {
+        for (int i = 0; i < TASK_LIST.size(); i++) {
+            if (TASK_LIST.get(i).equals(t))
+                return i;
+        }
+        return -1;
+    }
+    public static int getMapId(int rid, Boolean isPickup) {
+        return isPickup ? 2*rid : 2*rid+1;
     }
 
     // functions to switch between id of pickup and delivery TaskSteps
