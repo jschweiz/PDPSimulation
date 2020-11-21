@@ -12,29 +12,32 @@ import logist.task.Task;
 public class CPMaker {
 
     // Strings
-    private static String SUMMARY_STRING = "Run with \t p = %f \t MAX_ITER = %d \t MAX_TIME = %d sec";
+    private static String SUMMARY_STRING = "Run with \t p = %f \t MAX_ITER = %d \t MAX_TIME = %d sec \t DEPTH_SEARCH = %d";
     private static String SUB_ITERATION_STRING = "Iteration %d Cost : %f";
     private static String ITERATION_STRING
             = "************************ ITERATION %d \t vehicles : %d\t Cost : %f ******************************";
 
     // General parameters
-    private static double P = 0.4;
-    private static int MAX_ITERATIONS = 2000;
+    // general parameters for model
+    private static double P = 0.3;
+    private static int MAX_ITERATIONS = 4000;
     private static long MAX_TIME_MS = 30000;
-    private static int DEBUG = 0;
+    private static long DEPTH_SEARCH = 8;
+    public static int DEBUG = 0;
     private static boolean BETA = false;
 
     // exploration factors
     private static double TAKE_BEST_THRESHOLD = 0.4;
     private static double TAKE_BEST_VARIABILITY = 0.35;
     private static double EXPLORE_THRESHOLD_DEFAULT = 0;
-    private static double EXPLORE_THRESHOLD_STABLE = 0.005;
-    private static double EXPLORE_THRESHOLD_BOTTOM = 0.01;
+    private static double EXPLORE_THRESHOLD_STABLE =  0.05;//0.005;
+    private static double EXPLORE_THRESHOLD_BOTTOM = 0.1;//0.01;
 
     // object variables
     private static long START_TIME_MILLIS;
     private static int COUNTER = 1;
     private static Set<VariableSet> localMinima = new HashSet<VariableSet>();
+    public static Random rand = new Random();
 
     /**
      * Set the static parameters of the plan maker.
@@ -42,45 +45,71 @@ public class CPMaker {
      * @param p          This is the probability to choose the best neighbour
      * @param maxIter    This is the max number of iterations after which the plan
      *                   maker returns
-     * @param maxTimeMs This is the max number of seconds after which the plan
+     * @param maxTimeSec This is the max number of seconds after which the plan
      *                   maker returns
      * @param debug      This is the LOG level (-1, 0 and 1) to choose how much is printed
      * @return Nothing
      */
-    public static void setParameters(double p, int maxIter, Long maxTimeMs, int debug) {
+    public static void setParameters(double p, int maxIter, long maxTimeMs, int depthSearch, int debug) {
         if (p >= 0) P = p;
         if (maxIter > 0) MAX_ITERATIONS = maxIter;
         if (maxTimeMs > 0) MAX_TIME_MS = maxTimeMs;
+        if (depthSearch > 0) DEPTH_SEARCH = depthSearch;
         if (debug >= 0 && debug <= 2) DEBUG = debug;
-        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_MS));
+        System.out.println(String.format(SUMMARY_STRING, P, MAX_ITERATIONS, MAX_TIME_MS, DEPTH_SEARCH));
     }
 
-    /**
+    public static void initialize() {
+        localMinima.clear();
+    }
+
+     /**
      * Run the SLS algorithm to find an (optimal) repartition of tasks accross vehicles.
      * 
      * @param vehicles   List of available vehicles
      * @param maxIter    List of tasks that need to be picked and delivered
      * @return VariableSet (optimal) repartition of tasks accross vehicles
      */
-    public static VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks) {
-        VariableSet A = selectInitialSolution(vehicles, tasks);
+    public static VariableSet run(List<Vehicle> vehicles, List<Task> tasks, VariableSet startPoint){
+        initialize();
+        long time_start = System.currentTimeMillis();
+        VariableSet vs = runSLS(vehicles, tasks, startPoint);
+        long time_stop = System.currentTimeMillis();
+        
+        if(DEBUG > 0) System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
+        if(DEBUG > 0) System.out.println("Final state : \n" + vs);
+
+        return vs;
+    }
+   
+    public static VariableSet runSLS(List<Vehicle> vehicles, List<Task> tasks, VariableSet startPoint) {
+        VariableSet A;
+        if (startPoint == null)
+            A = selectInitialSolution(vehicles, tasks);
+        else
+            A = startPoint;
+
         VariableSet A_old = null;
+        START_TIME_MILLIS = System.currentTimeMillis();
+        COUNTER = 0;
         do {
             A_old = A;
             Set<VariableSet> N = chooseNeighbours(A_old);
             A = localChoice(N, A_old);
             printReport(A, A_old);
+
+            if (COUNTER > 1 && COUNTER % 10000 == 0) {
+                System.out.println("BEST cost : " + findBest(localMinima).getCost());
+                // A = randomShake(A, 40);
+            } 
         } while (!conditionIsMet(A, A_old));
         localMinima.add(A);
         A = findBest(localMinima);
-        System.out.println("Final minimum has cost " + A.getCost());
+        // System.out.println("Final minimum has cost " + A.getCost());
         return A;
     }
 
     private static VariableSet selectInitialSolution(List<Vehicle> vehicles,  List<Task> tasks) {
-        // initialize variables for algo
-        START_TIME_MILLIS = System.currentTimeMillis();
-        COUNTER = 0;
         // create a basic environment of variables by giving all tasks to a vehicle
         return new VariableSet(vehicles, tasks);
     }
@@ -92,13 +121,9 @@ public class CPMaker {
             return true;
 
         // Condition on time
-        long elapsedTimeSec = (System.currentTimeMillis() - START_TIME_MILLIS);
-        if(COUNTER %100 == 0)
-            System.out.println("" + elapsedTimeSec + " s   " + MAX_TIME_MS);
-        if (elapsedTimeSec > MAX_TIME_MS) {
-            System.out.println("Done");
+        long elapsedTimeMs = (System.currentTimeMillis() - START_TIME_MILLIS);
+        if (elapsedTimeMs > MAX_TIME_MS) 
             return true;
-        }
 
         return false;
     }
@@ -114,7 +139,7 @@ public class CPMaker {
         initialSet.add(A_old);
         treeExploration.add(initialSet);
         
-        for (int depth = 1; depth <= CentralizedTemplate.DEPTH_SEARCH; depth++) {
+        for (int depth = 1; depth <= DEPTH_SEARCH; depth++) {
             Set<VariableSet> neighbors = new HashSet<VariableSet>();
             for (VariableSet vs : treeExploration.get(depth - 1)) {
                 vi = vs.getRandomAppropriateVehicle();
@@ -147,6 +172,53 @@ public class CPMaker {
     }
 
     /**
+     * Performs a random shake of all tasks
+     */
+    public static VariableSet randomShake(VariableSet vs, int steps) {
+        double rd;
+        int vi, vj, tIdX1, tIdX2, length, counter;
+        TaskStep ts;
+
+        for (int i = 0; i < steps; i++) {
+            rd = rand.nextDouble();
+            vi = vs.getRandomAppropriateVehicle();
+            counter = 0;
+            // perform random vehicle change
+            if (rd > 0.5 ) {
+                ts = vs.getFirstStepOf(vi);
+                do {
+                    counter++;
+                    vj = rand.nextInt(vs.getNumberVehicles());
+                } while (vs.getVehicleCapacity(vj) < ts.getTask().weight && counter < 1000);
+                
+                if (counter >= 1000){
+                    System.err.println("Could not randomly shake #1");
+                    continue;
+                }
+                vs = changingVehicle(vs, vi, vj);
+            }
+            // perform random order change
+            else {
+                length = vs.computeNumberOfTaskVehicle(vi);
+                if (length >= 4) {
+                    do {
+                        tIdX1 = rand.nextInt(length-2) + 1;
+                        tIdX2 = tIdX1 + 1 + rand.nextInt(length - tIdX1 -1);
+                    } while(!vs.validChange(tIdX1, tIdX2, vi) && counter < 1000);
+
+                    if (counter >= 1000){
+                        System.err.println("Could not randomly shake #1");
+                        continue;
+                    }
+                    vs = changingTaskOrder(vs, vi, tIdX1, tIdX2);
+                }
+            }
+        }
+
+        return vs;
+    }
+
+    /**
      * 
      * @param A_old Parent VariableSet 
      * @param N List of neighboring states
@@ -161,7 +233,7 @@ public class CPMaker {
                 
                 TaskStep t = A_old.getFirstStepOf(vi);
                 // possible to put the task in the vehicle (in front of all) 
-                if ( t.t.weight < A_old.getVehicleCapacity(vj)) {
+                if ( t.getTask().weight < A_old.getVehicleCapacity(vj)) {
                     VariableSet A = changingVehicle(A_old, vi, vj);
                     N.add(A);
                 }
@@ -174,7 +246,7 @@ public class CPMaker {
                     
                     TaskStep t = TaskStep.fromId(pickId);
                     // possible to put the task in the vehicle (in front of all) 
-                    if ( t.t.weight < A_old.getVehicleCapacity(vj)) {
+                    if ( t.getTask().weight < A_old.getVehicleCapacity(vj)) {
                         VariableSet A = changingVehicle(A_old, vi, vj, pickId);
                         N.add(A);
                     }
@@ -228,10 +300,10 @@ public class CPMaker {
         }
 
         // choose neightbor according to proba
-        double rand = new Random().nextDouble();
-        if (rand < takeBestThreshold) {
+        double randDouble = rand.nextDouble();
+        if (randDouble < takeBestThreshold) {
             return bestNeighbor;
-        } else if (rand > 1 - explorationThreshold) {
+        } else if (randDouble > 1 - explorationThreshold) {
             localMinima.add(A_old);
             return getRandom(N);
         } else {
@@ -254,7 +326,7 @@ public class CPMaker {
     }
 
     private static VariableSet getRandom(Set<VariableSet> N) {
-        int randIndex = new Random().nextInt(N.size());
+        int randIndex = rand.nextInt(N.size());
         int count = 0;
         for (VariableSet v : N) {
             if (count == randIndex) {
@@ -269,9 +341,14 @@ public class CPMaker {
         if (CPMaker.DEBUG > 0) {
             System.out.println(String.format(ITERATION_STRING, COUNTER, A.getNumberUsedVehicles(), A.getCost()));
             if (CPMaker.DEBUG > 1) System.out.println(A_old);
-        } else if (COUNTER % 100 == 0) {
+        } 
+        else if (COUNTER % 10000 == 0) {
             System.out.println(String.format(SUB_ITERATION_STRING, COUNTER, A.getCost())); 
         }
+    }
+
+    public static VariableSet addTask(VariableSet vs, Task t) {
+        return null;
     }
     
 }

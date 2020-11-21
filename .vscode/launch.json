@@ -18,13 +18,13 @@
         //     "mainClass": "logist.LogistPlatform",
         //     "args": "deliberative/config/deliberative.xml deliberative-astar"
         // },
-        // {
-        //     "type": "java",
-        //     "name": "centralized",
-        //     "request": "launch",
-        //     "mainClass": "logist.LogistPlatform",
-        //     "args": "centralized/config/centralized.xml centralized-main"
-        // },
+        {
+            "type": "java",
+            "name": "centralized",
+            "request": "launch",
+            "mainClass": "logist.LogistPlatform",
+            "args": "centralized/config/centralized.xml centralized-main"
+        },
         
         {
             "type": "java",
@@ -32,16 +32,8 @@
             "request": "launch",
             "mainClass": "logist.LogistPlatform",
             // "args": "auction/config/auction.xml auction-main-67"
-            "args": "auction/config/auction_simplified.xml auction-main-67"
+            "args": "auction/config/auction.xml auction-main-67"
         },
-
-        // {
-        //     "type": "java",
-        //     "name": "newTournament",
-        //     "request": "launch",
-        //     "mainClass": "logist.LogistPlatform",
-        //     "args": "-new auctionTournament agents"
-        // },
         {
             "type": "java",
             "name": "CreateTournament",
@@ -63,7 +55,5 @@
             "mainClass": "logist.LogistPlatform",
             "args": "-score tournamentIntellect [result.txt]"
         }
-
-
     ]
 }

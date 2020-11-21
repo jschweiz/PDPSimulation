@@ -7,15 +7,14 @@ import logist.topology.Topology.City;
 
 public class TaskStep {
 
-    public static int NUM_TASKS = 0;
-    public static List<Task> TASK_LIST = null;
-    public static int NULL = -1;
-    public static String TO_STRING_PICK = "(task:%d;PICK)";
-    public static String TO_STRING_DELI = "(task:%d;DELI)";
+    private static List<Task> TASK_LIST = null;
+    private static int NULL = -1;
+    private static String TO_STRING_PICK = "(task:%d;PICK)";
+    private static String TO_STRING_DELI = "(task:%d;DELI)";
 
-    public Task t;
-    public int id;
-    public boolean isPickup;
+    private Task t;
+    private int id;
+    private boolean isPickup;
 
     // functions on a taskstep
     public TaskStep(Task t, int id, boolean isPickup) {
@@ -24,8 +23,10 @@ public class TaskStep {
         this.isPickup = isPickup;
     }
 
+    // even : pickup
+    // odd : delivery
     public int getMapId() {
-        return this.id + (isPickup ? 0 : NUM_TASKS);
+        return isPickup ? 2*id : 2*id+1;
     }
     
     public String toString() {
@@ -33,8 +34,25 @@ public class TaskStep {
         return String.format(s, id);
     }
 
+    public boolean isPickup() {
+        return isPickup;
+    }
+
+    public Task getTask() {
+        return t;
+    }
+
+    public int getId() {
+        return id;
+    }
+
 
     // STATIC FUNCTIONS: simplify between TaskSteps and their ids to deal with arrays
+
+    public static void setTaskList(List<Task> taskList) {
+        TASK_LIST = taskList;
+    }
+    
 
     public static TaskStep fromId(int id) {
         if (id == NULL) return null;
@@ -52,22 +70,21 @@ public class TaskStep {
 
     // get info on a specific id
     public static boolean isPickup(int id) {
-        return id/NUM_TASKS == 0;
+        return id%2 == 0;
     }
     public static int getWeight(int id) {
         int w = TASK_LIST.get(getRealTaskId(id)).weight;
         return isPickup(id) ? w : -w;
     }
     public static int getRealTaskId(int id) {
-        if (id == NULL) return -1;
-        return id >= NUM_TASKS ? id - NUM_TASKS : id;
+        return id/2;
     }
 
     // functions to switch between id of pickup and delivery TaskSteps
     public static int getDeliveryId(int i) {
-        return i + NUM_TASKS;
+        return i + 1;
     }
     public static int getPickupId(int i) {
-        return i - NUM_TASKS;
+        return i - 1;
     }
 }

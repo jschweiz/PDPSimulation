@@ -36,8 +36,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
     // general parameters for model
     public static final int DEBUG = 0;
     public static final double P = 0.3;
-    public static final int MAX_ITERATIONS = 50000;
-    public static final int DEPTH_SEARCH = 8;
+    public static final int MAX_ITERATIONS = 300000;
+    public static final int DEPTH_SEARCH = 2;
 
     private Topology topology;
     private TaskDistribution distribution;
@@ -81,8 +81,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
             taskList.add(t);
 
         System.out.println("Starting computing best plan...");
-        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan - 2000, DEBUG); // take 1 sec of margin
-        VariableSet finalState = CPMaker.runSLS(vehicles, taskList);
+        CPMaker.setParameters(P, MAX_ITERATIONS, timeout_plan - 2000, DEPTH_SEARCH, DEBUG); // take 1 sec of margin
+        VariableSet finalState = CPMaker.runSLS(vehicles, taskList, null);
 
         long time_stop = System.currentTimeMillis();
         System.out.println("Plan computed in : " + (time_stop-time_start) + " ms");
@@ -108,8 +108,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
                 for (City c : currentCity.pathTo(destination)) {
                     actions.add(new Action.Move(c));
                 }
-                if (ts.isPickup) actions.add(new Action.Pickup(ts.t));
-                else actions.add(new Action.Delivery(ts.t));
+                if (ts.isPickup()) actions.add(new Action.Pickup(ts.getTask()));
+                else actions.add(new Action.Delivery(ts.getTask()));
 
                 currentCity = destination;
             }
