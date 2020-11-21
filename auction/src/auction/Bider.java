@@ -116,7 +116,7 @@ public class Bider {
 
 
     public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
-        int changeStratTask = 5;
+        int changeStratTask = 4;
 
         double m = 0.6;
         double x = 0.65;
@@ -128,7 +128,7 @@ public class Bider {
         long benefits = (wonVs == null) ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
 
         if (wonTasks.size() == changeStratTask) {
-            minBidToGetBackPositive = (int)Math.abs(benefits / changeStratTask);
+            minBidToGetBackPositive = (int)Math.abs(benefits / (changeStratTask + 1));
         }
 
         if (wonTasks.size() > changeStratTask && benefits < 0 ) {
