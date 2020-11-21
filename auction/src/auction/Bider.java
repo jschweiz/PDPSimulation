@@ -132,7 +132,7 @@ public class Bider {
         }
 
         if (wonTasks.size() > changeStratTask && benefits < 0 ) {
-            m = 1.05;
+            m = 0.95;
             x =  1.1;
             M =  1.3;
             ti = 0.5;
