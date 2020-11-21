@@ -208,13 +208,13 @@ public class Bider {
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
                 double proba = this.distribution.probability(from, to);
-                // System.out.println(from.pathTo(to).size());
                 List<City> path = from.pathTo(to);
                 this.probaToGoTo[from.id] += proba;
                 for (City c : path) this.probaToGoTo[c.id] += proba;
             }
         }
 
+        // valuation of a task (does it require to go throught rewarding cities) ? 
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
                 for (City c : from.pathTo(to)) this.isThisValuable[from.id][to.id] += this.probaToGoTo[c.id];
