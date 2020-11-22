@@ -54,7 +54,7 @@ public class Auction implements AuctionBehavior {
 		timeout_bid = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.BID);
 		System.out.println(timeout_bid);
 		
-		CPMaker.setParameters(-1, 50000, (long)(0.9*timeout_bid), 1, -1);
+		CPMaker.setParameters(-1, 10000000, (long)(0.9*timeout_bid), 1, -1);
 
 		// Save parameters
 		this.topology = topology;
@@ -78,7 +78,7 @@ public class Auction implements AuctionBehavior {
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		bider.writeToFile();
+		// bider.writeToFile();
 		CPMaker.setParameters(-1, -1, (long) (0.9 * timeout_plan), -1, -1);
 		VariableSet finalState = bider.getVariableSet();
 		List<Plan> plans = convertVariableSet(vehicles, finalState);

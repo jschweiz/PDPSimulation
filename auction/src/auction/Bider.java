@@ -92,11 +92,11 @@ public class Bider {
 
         // Check if new plan's cost < old plan's cost
         if (marginalCost < -10) {
-            System.out.println("WonVs      : " + wonVs.getCost());
-            System.out.println("proposedVs : " + proposedVs.getCost());
+            // System.out.println("WonVs      : " + wonVs.getCost());
+            // System.out.println("proposedVs : " + proposedVs.getCost());
             try {
                 wonVs = proposedVs.copyMinusLastTask();
-                System.out.println("WonVS after proposed task removed: " + wonVs.getCost() + "\t" + wonVs.getTrueCost());
+                // System.out.println("WonVS after proposed task removed: " + wonVs.getCost() + "\t" + wonVs.getTrueCost());
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 System.out.println("Error in task removal : ignored");
@@ -140,9 +140,9 @@ public class Bider {
         }
 
         if (wonTasks.size() > changeStratTask && benefits >= 0) {
-            m += 0.35;
-            x += 0.45;
-            M += 0.4;
+            m = 0.95;
+            x = 1.1;
+            M = 1.4;
             minPrice = 500;
         }
 
@@ -204,7 +204,7 @@ public class Bider {
         //         + " averageBidDiff:" + averageBidDiff
         //         + " oponentBidFactor: " + oponentBidFactor
         //         + " finality:" + finality);
-        System.out.println("Opponent share factor: " + opponentShareFactor);
+        // System.out.println("Opponent share factor: " + opponentShareFactor);
         return opponentShareFactor;
     }
 
@@ -228,7 +228,7 @@ public class Bider {
             updateOurPlan(previousTask);
             // System.out.println("GOT THE BID\n\n");
         } else {
-            System.out.println("DID NOT GET THE BID\n\n");
+            // System.out.println("DID NOT GET THE BID\n\n");
         }
 
         // save history
@@ -323,8 +323,8 @@ public class Bider {
     // function to return the final plan
     public VariableSet getVariableSet() {
         VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
-        System.out.println("WonVS with recompute : " + vs.getCost());
-        System.out.println(vs);
+        // System.out.println("WonVS with recompute : " + vs.getCost());
+        // System.out.println(vs);
         return vs;
     }
 
