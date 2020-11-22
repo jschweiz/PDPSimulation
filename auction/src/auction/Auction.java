@@ -52,8 +52,8 @@ public class Auction implements AuctionBehavior {
 		timeout_setup = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.SETUP);
 		timeout_plan = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.PLAN);
 		timeout_bid = LogistPlatform.getSettings().get(LogistSettings.TimeoutKey.BID);
-
-		CPMaker.setParameters(-1, 200000, (long) (0.9 * timeout_bid), 2, -1);
+		
+		CPMaker.setParameters(-1, 1000000, (long)(0.9*timeout_bid), 1, -1);
 
 		// Save parameters
 		this.topology = topology;

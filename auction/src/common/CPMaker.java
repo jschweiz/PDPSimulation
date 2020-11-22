@@ -281,26 +281,33 @@ public class CPMaker {
         return A1;
     }
 
+
+    private static double lastCost = 0;
+    private static int counterStability = 0;
+
     private static VariableSet localChoice(Set<VariableSet> N, VariableSet A_old) {
         // return A with probability p
         VariableSet bestNeighbor = findBest(N);
 
         // facilitate moving to a solution with less vehicles
         double takeBestThreshold = TAKE_BEST_THRESHOLD;
-        int diffVehicle = A_old.getNumberUsedVehicles() - bestNeighbor.getNumberUsedVehicles();
-        if (diffVehicle < 0) { // more vehicles
-            takeBestThreshold -= TAKE_BEST_VARIABILITY;
-        } else if (diffVehicle > 0) { // less vehicles
-            takeBestThreshold += TAKE_BEST_VARIABILITY;
-        }
+
+        double actualCost = A_old.getCost();
 
         // encorage exploration when stable or stuck in local minimum
         double explorationThreshold = EXPLORE_THRESHOLD_DEFAULT;
-        double diffCost = A_old.getCost() - bestNeighbor.getCost();
-        if (diffCost == 0) { // stable
-            explorationThreshold = EXPLORE_THRESHOLD_STABLE;
-        } else if (diffCost <= 0) { // for sure a local min
+ 
+        if (counterStability >= 1500) { 
             explorationThreshold = EXPLORE_THRESHOLD_BOTTOM;
+        }
+
+        if (actualCost == lastCost) {
+            counterStability ++;
+        } else if (actualCost > lastCost) {
+            counterStability += 2;
+        } else {
+            counterStability = 0;
+            lastCost = actualCost;
         }
 
         // choose neightbor according to proba
