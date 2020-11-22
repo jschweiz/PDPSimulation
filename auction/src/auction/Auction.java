@@ -79,7 +79,7 @@ public class Auction implements AuctionBehavior {
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 		// bider.writeToFile();
-		CPMaker.setParameters(-1, -1, (long) (0.9 * timeout_plan), -1, -1);
+		CPMaker.setParameters(-1, 10000000, (long) (0.9 * timeout_plan), -1, -1);
 		VariableSet finalState = bider.getVariableSet();
 		List<Plan> plans = convertVariableSet(vehicles, finalState);
 		return plans;

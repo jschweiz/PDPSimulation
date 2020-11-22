@@ -120,8 +120,8 @@ public class Bider {
     public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
         int changeStratTask = 3;
 
-        double m = 0.6;
-        double x = 0.8;
+        double m = 0.4;
+        double x = 0.7;
         double M = 1;
         long minPrice = 300;
 
