@@ -90,10 +90,16 @@ public class Bider {
         // System.out.println( "Marginal price is : " + marginalCost);
 
         // Check if new plan's cost < old plan's cost
-        if (marginalCost < 0) {
-            System.out.println("WonVS before proposed Task added: " + wonVs.getCost());
-            wonVs = proposedVs.copyMinusLastTask();
-            System.out.println("WonVS after proposed task removed: " + wonVs.getCost());
+        if (marginalCost < -10) {
+            System.out.println("WonVs      : " + wonVs.getCost());
+            System.out.println("proposedVs : " + proposedVs.getCost());
+            try {
+                wonVs = proposedVs.copyMinusLastTask();
+                System.out.println("WonVS after proposed task removed: " + wonVs.getCost() + "\t" + wonVs.getTrueCost());
+            }
+            catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("Error in task removal : ignored");
+            }
         }
 
         // calcul final bid
@@ -272,10 +278,7 @@ public class Bider {
 
     // function to return the final plan
     public VariableSet getVariableSet() {
-        VariableSet vs = CPMaker.run(agent.vehicles(), wonTasks, null);
-        System.out.println("From SCRATCH : " + vs.getCost());
-        System.out.println("WonVS : " + wonVs.getCost());
-        vs = CPMaker.run(agent.vehicles(), null, wonVs);
+        VariableSet vs = CPMaker.run(agent.vehicles(), null, wonVs);
         System.out.println("WonVS with recompute : " + vs.getCost());
         System.out.println(vs);
         return vs;

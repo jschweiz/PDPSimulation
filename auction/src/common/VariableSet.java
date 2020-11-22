@@ -422,6 +422,11 @@ public class VariableSet {
         int timer = 1;
 
         while (ti != NULL) {
+            // if (ti >= time.length){
+            // System.out.println("" + vi + " " + ti);
+            // System.out.println(Arrays.toString(time));
+            // System.out.println(Arrays.toString(nextTaskT));
+            // }
             time[ti] = timer;
             timer++;
             ti = nextTaskT[ti];
@@ -640,6 +645,14 @@ public class VariableSet {
         int deliverId = TaskStep.getMapId(rid, false);
 
         int v = vehicle[pickupId]; // vehicle holding the task
+
+        if (nextTaskV[v] == pickupId) {
+            if (nextTaskT[nextTaskV[v]] == deliverId)
+                newNextTaskV[v] = nextTaskT[nextTaskT[nextTaskV[v]]];
+            else
+                newNextTaskV[v] = nextTaskT[nextTaskV[v]];
+        } else
+            newNextTaskV[v] = nextTaskV[v];
 
         for (int i = 0; i < newNumTasks * 2; i++) {
             if (nextTaskT[i] == pickupId) {
