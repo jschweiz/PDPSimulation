@@ -16,17 +16,16 @@ import logist.topology.Topology;
 import logist.topology.Topology.City;
 
 public class Bider {
-	private Topology topology;
-	private TaskDistribution distribution;
+    private Topology topology;
+    private TaskDistribution distribution;
     private Agent agent;
-    
+
     private List<Task> wonTasks;
     private VariableSet wonVs;
     private VariableSet proposedVs;
     private int bidNumber;
 
-
-    // history to plot 
+    // history to plot
     private List<Long> totalBenefList;
     private List<Long> marginalCostList;
     private List<Long> costList;
@@ -42,27 +41,23 @@ public class Bider {
     private int currentRevenuFromTasks = 0;
     private int minBidToGetBackPositive;
 
-    public Bider(Topology topology, TaskDistribution distribution, Agent agent){
+    public Bider(Topology topology, TaskDistribution distribution, Agent agent) {
         // initialize basic variables
-		this.topology = topology;
-		this.distribution = distribution;
+        this.topology = topology;
+        this.distribution = distribution;
         this.agent = agent;
-
 
         // initialize bidding tournament
         this.bidNumber = 0;
         this.wonTasks = new ArrayList<Task>();
         this.wonVs = null;
         this.proposedVs = null;
-        
-
 
         // initialize risk calculation
         int numCities = topology.cities().size();
         this.probaToGoTo = new double[numCities];
         this.isThisValuable = new double[numCities][numCities];
         this.setRiskProbabilities();
-
 
         this.currentRevenuFromTasks = 0;
         // initalize histories of all bids / strategy choices
@@ -73,7 +68,6 @@ public class Bider {
         this.bidsOfAgents = new ArrayList<>();
         this.tasksOfAgents = new HashMap<>();
     }
-
 
     // compute the strategy
 
@@ -87,8 +81,8 @@ public class Bider {
 
         // compute optiomal plan of previous plan plus the new task
         VariableSet startPoint = (wonVs != null) ? wonVs.copyPlusTask(t) : null;
-        proposedVs = CPMaker.run(agent.vehicles(), wonTasks, startPoint );
-        
+        proposedVs = CPMaker.run(agent.vehicles(), wonTasks, startPoint);
+
         // compute marginal cost
         double lastStepCost = (wonVs != null) ? wonVs.getCost() : 0;
         double newPlanCost = proposedVs.getCost();
@@ -96,7 +90,7 @@ public class Bider {
         // System.out.println( "Marginal price is : " + marginalCost);
 
         // Check if new plan's cost < old plan's cost
-        if(marginalCost < 0) {
+        if (marginalCost < 0) {
             System.out.println("WonVS before proposed Task added: " + wonVs.getCost());
             wonVs = proposedVs.copyMinusLastTask();
             System.out.println("WonVS after proposed task removed: " + wonVs.getCost());
@@ -109,11 +103,10 @@ public class Bider {
         // note for history
         totalBenefList.add(currentRevenu);
         marginalCostList.add((long) marginalCost);
-        
+
         wonTasks.remove(t); // always last
         return bid;
     }
-
 
     public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
         int changeStratTask = 4;
@@ -128,45 +121,46 @@ public class Bider {
         long benefits = (wonVs == null) ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
 
         if (wonTasks.size() == changeStratTask) {
-            minBidToGetBackPositive = (int)Math.abs(benefits / (changeStratTask + 1));
+            minBidToGetBackPositive = (int) Math.abs(benefits / (changeStratTask + 1));
         }
 
-        if (wonTasks.size() > changeStratTask && benefits < 0 ) {
+        if (wonTasks.size() > changeStratTask && benefits < 0) {
             m = 0.98;
-            x =  1.1;
-            M =  1.3;
+            x = 1.1;
+            M = 1.3;
             ti = 0.5;
             minPrice = minBidToGetBackPositive;
         }
 
-        if (wonTasks.size() > changeStratTask && benefits >= 0 ) {
+        if (wonTasks.size() > changeStratTask && benefits >= 0) {
             m += 0.45;
-            x +=  0.45;
-            M +=  0.4;
+            x += 0.45;
+            M += 0.4;
             ti -= 0.1;
             minPrice = 500;
         }
 
-         // compute risk adversion
-         double qualityOfInvestment = measureRisk(t);
-         double marginalMultiplicationFactor = computeRiskFactor(qualityOfInvestment, ti, M, m, x);
- 
+        // compute risk adversion
+        double qualityOfInvestment = measureRisk(t);
+        double marginalMultiplicationFactor = computeRiskFactor(qualityOfInvestment, ti, M, m, x);
+
         // compute adapted marginal cost
-        long marginalAdaptedPrice =  (long) (Double.max(0, marginalCost) * marginalMultiplicationFactor);
+        long marginalAdaptedPrice = (long) (Double.max(0, marginalCost) * marginalMultiplicationFactor);
 
         // compute minimal price
         long minimalBidPrice = (long) (minPrice * Math.pow(marginalMultiplicationFactor, 2));
 
         // final bid
         long bid = Long.max(minimalBidPrice, marginalAdaptedPrice);
-        // String s = "risk-proba: %d , marg-factor: %f, marg-adapted-price: %d, min-price: %d, bid-price: %d";
+        // String s = "risk-proba: %d , marg-factor: %f, marg-adapted-price: %d,
+        // min-price: %d, bid-price: %d";
         // System.out.println(String.format(s,
-        //     (int)(qualityOfInvestment*100),
-        //     marginalMultiplicationFactor,
-        //     marginalAdaptedPrice,
-        //     minimalBidPrice,
-        //     bid));
- 
+        // (int)(qualityOfInvestment*100),
+        // marginalMultiplicationFactor,
+        // marginalAdaptedPrice,
+        // minimalBidPrice,
+        // bid));
+
         return bid;
     }
 
@@ -179,8 +173,6 @@ public class Bider {
         }
         return factor;
     }
-
-
 
     // function to handle bid steps
 
@@ -199,9 +191,8 @@ public class Bider {
         this.bidsOfAgents.add(bids); // note for history
         this.currentRevenuFromTasks += taskWon ? bids[this.agent.id()] : 0;
         this.totalGainList.add((long) this.currentRevenuFromTasks);
-        this.costList.add( this.wonVs != null ? (long) this.wonVs.getCost() : 0);
+        this.costList.add(this.wonVs != null ? (long) this.wonVs.getCost() : 0);
     }
-
 
     private void updateTaskOfAgents(Task t, int winner) {
         if (!tasksOfAgents.containsKey(winner))
@@ -214,10 +205,9 @@ public class Bider {
         wonTasks.add(t);
     }
 
-
     // risk analyze
-    
-    private void setRiskProbabilities(){
+
+    private void setRiskProbabilities() {
         initializeRisk();
 
         // proba to go through a city
@@ -226,14 +216,16 @@ public class Bider {
                 double proba = this.distribution.probability(from, to);
                 List<City> path = from.pathTo(to);
                 this.probaToGoTo[from.id] += proba;
-                for (City c : path) this.probaToGoTo[c.id] += proba;
+                for (City c : path)
+                    this.probaToGoTo[c.id] += proba;
             }
         }
 
-        // valuation of a task (does it require to go throught rewarding cities) ? 
+        // valuation of a task (does it require to go throught rewarding cities) ?
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
-                for (City c : from.pathTo(to)) this.isThisValuable[from.id][to.id] += this.probaToGoTo[c.id];
+                for (City c : from.pathTo(to))
+                    this.isThisValuable[from.id][to.id] += this.probaToGoTo[c.id];
             }
         }
 
@@ -244,7 +236,8 @@ public class Bider {
     private void initializeRisk() {
         for (City from : this.topology.cities()) {
             this.probaToGoTo[from.id] = 0;
-            for (City to : this.topology.cities()) this.isThisValuable[from.id][to.id] = 0;
+            for (City to : this.topology.cities())
+                this.isThisValuable[from.id][to.id] = 0;
         }
     }
 
@@ -255,8 +248,10 @@ public class Bider {
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
                 val = this.isThisValuable[from.id][to.id];
-                if (val < minValue && val != 0) minValue = val;
-                if (val > maxValue) maxValue = val;
+                if (val < minValue && val != 0)
+                    minValue = val;
+                if (val > maxValue)
+                    maxValue = val;
             }
         }
 
@@ -264,7 +259,8 @@ public class Bider {
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
                 if (this.isThisValuable[from.id][to.id] != 0) {
-                    this.isThisValuable[from.id][to.id] =  (this.isThisValuable[from.id][to.id] - minValue)/(maxValue - minValue);
+                    this.isThisValuable[from.id][to.id] = (this.isThisValuable[from.id][to.id] - minValue)
+                            / (maxValue - minValue);
                 }
             }
         }
@@ -273,7 +269,6 @@ public class Bider {
     private double measureRisk(Task t) {
         return this.isThisValuable[t.pickupCity.id][t.deliveryCity.id];
     }
-
 
     // function to return the final plan
     public VariableSet getVariableSet() {
@@ -293,12 +288,10 @@ public class Bider {
             myWriter.write("taskid,bidAgent1,bidAgent2,totalBenef,margCost,totalCost,totalRevenu\n");
             for (int i = 0; i < totalBenefList.size(); i++) {
                 long v1 = bidsOfAgents.get(i)[this.agent.id()];
-                long v2 = bidsOfAgents.get(i).length > 1 ? bidsOfAgents.get(i)[1-this.agent.id()] : 0;
-                myWriter.write(i + "," + v1 + "," + v2 + ","
-                        + this.totalBenefList.get(i) + ","
-                        + this.marginalCostList.get(i) + ','
-                        + this.costList.get(i) + ","
-                        + this.totalGainList.get(i) + "\n");
+                long v2 = bidsOfAgents.get(i).length > 1 ? bidsOfAgents.get(i)[1 - this.agent.id()] : 0;
+                myWriter.write(
+                        i + "," + v1 + "," + v2 + "," + this.totalBenefList.get(i) + "," + this.marginalCostList.get(i)
+                                + ',' + this.costList.get(i) + "," + this.totalGainList.get(i) + "\n");
             }
             myWriter.close();
         } catch (IOException e) {
