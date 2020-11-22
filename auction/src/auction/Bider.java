@@ -3,6 +3,7 @@ package auction;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -114,41 +115,40 @@ public class Bider {
         return bid;
     }
 
-    public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
-        int changeStratTask = 4;
+    private static double TI = 0.6;
 
-        double m = 0.7;
-        double x = 0.65;
+    public long computePriceWithStrategy(double marginalCost, double newPlanCost, Task t) {
+        int changeStratTask = 3;
+
+        double m = 0.6;
+        double x = 0.8;
         double M = 1;
-        double ti = 0.6;
         long minPrice = 300;
 
         // adapt factors to the time-beeing
         long benefits = (wonVs == null) ? 0 : (long) (this.currentRevenuFromTasks - wonVs.getCost());
 
         if (wonTasks.size() == changeStratTask) {
-            minBidToGetBackPositive = (int) Math.abs(benefits / (changeStratTask + 1));
+            minBidToGetBackPositive = (int) Math.abs(benefits / (changeStratTask));
         }
 
         if (wonTasks.size() > changeStratTask && benefits < 0) {
             m = 0.98;
             x = 1.1;
             M = 1.3;
-            ti = 0.5;
             minPrice = minBidToGetBackPositive;
         }
 
         if (wonTasks.size() > changeStratTask && benefits >= 0) {
-            m += 0.45;
+            m += 0.35;
             x += 0.45;
             M += 0.4;
-            ti -= 0.1;
             minPrice = 500;
         }
 
         // compute risk adversion
         double qualityOfInvestment = measureRisk(t);
-        double marginalMultiplicationFactor = computeRiskFactor(qualityOfInvestment, ti, M, m, x);
+        double marginalMultiplicationFactor = computeRiskFactor(qualityOfInvestment, TI, M, m, x);
 
         // compute adapted marginal cost
         long marginalAdaptedPrice = (long) (Double.max(0, marginalCost) * marginalMultiplicationFactor);
@@ -167,7 +167,45 @@ public class Bider {
         // minimalBidPrice,
         // bid));
 
+        // if one versus one, adapt to his bids
+        if (this.bidsOfAgents.size() > 0 && this.bidsOfAgents.get(0).length == 2) {
+            double opponentRisk = measureOpponentStrenght();
+            bid *= opponentRisk;
+        }
+
         return bid;
+    }
+
+    public double measureOpponentStrenght() {
+
+        // factor regarding market share [0.9; 1.1]
+        int numOfTasks = this.bidsOfAgents.size();
+        double marketShare = (this.wonTasks.size() - 1) / ((double) numOfTasks) - 0.5;
+        double opponentShareFactor = (marketShare*1/5 + 1);
+
+        // // factor regarding bid difference [0.9; 1.1]
+        // long bidDifference = 0;
+        // for (int i = Integer.max(0, bidNumber - 5); i < numOfTasks; i++) {
+        //     bidDifference -= this.bidsOfAgents.get(i)[0];
+        // }
+        // double average = -bidDifference/Integer.min(numOfTasks, 5);
+        // for (int i = Integer.max(0, bidNumber - 5); i < numOfTasks; i++) {
+        //     // bidDifference += 1000;
+        //     bidDifference += this.bidsOfAgents.get(i)[1];
+        // }
+        // double averageBidDiff = bidDifference/Integer.min(numOfTasks, 5);
+        // double multiplicatorDiff = (averageBidDiff - 0.1 * average) / (2 * average) + 1;
+        // double oponentBidFactor = Double.min(1.5, Double.max(0.5, multiplicatorDiff));
+
+        // // mean of the two factors
+        // double finality = (opponentShareFactor * oponentBidFactor);// / 2;
+
+        // System.out.println("OpponentStrengh: shareFactor:" + opponentShareFactor
+        //         + " averageBidDiff:" + averageBidDiff
+        //         + " oponentBidFactor: " + oponentBidFactor
+        //         + " finality:" + finality);
+        System.out.println("Opponent share factor: " + opponentShareFactor);
+        return opponentShareFactor;
     }
 
     public double computeRiskFactor(double p, double t, double M, double m, double x) {
@@ -262,14 +300,20 @@ public class Bider {
         }
 
         // normalize
+        List<Double> allValues = new ArrayList<>();
         for (City from : this.topology.cities()) {
             for (City to : this.topology.cities()) {
                 if (this.isThisValuable[from.id][to.id] != 0) {
-                    this.isThisValuable[from.id][to.id] = (this.isThisValuable[from.id][to.id] - minValue)
+                    val = (this.isThisValuable[from.id][to.id] - minValue)
                             / (maxValue - minValue);
+                    this.isThisValuable[from.id][to.id] = val;
+                    allValues.add(val);
                 }
             }
         }
+
+        Collections.sort(allValues);
+        TI = allValues.get(allValues.size()/2);
     }
 
     private double measureRisk(Task t) {
@@ -287,7 +331,9 @@ public class Bider {
     // function to write in order to plot
     public void writeToFile() {
         try {
-            FileWriter myWriter = new FileWriter("result_investor_" + (new Random()).nextInt(1000) + ".txt");
+            int rd = (new Random()).nextInt(1000);
+            System.out.println("Writing in " + rd);
+            FileWriter myWriter = new FileWriter("result_investor_" + rd + ".txt");
             myWriter.write("taskid,bidAgent1,bidAgent2,totalBenef,margCost,totalCost,totalRevenu\n");
             for (int i = 0; i < totalBenefList.size(); i++) {
                 long v1 = bidsOfAgents.get(i)[this.agent.id()];
